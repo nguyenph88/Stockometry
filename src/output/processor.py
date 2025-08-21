@@ -2,7 +2,7 @@
 import json
 import os
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from src.database import get_db_connection
 
 class OutputProcessor:
@@ -11,7 +11,7 @@ class OutputProcessor:
     """
     def __init__(self, report_string: str):
         self.report_string = report_string
-        self.report_date = datetime.utcnow().date()
+        self.report_date = datetime.now(timezone.utc).date()
         self.output_dir = "output"
         os.makedirs(self.output_dir, exist_ok=True)
         self._init_db_tables()
@@ -136,7 +136,7 @@ class OutputProcessor:
         output_data = {
             "report_id": report_id,
             "report_date": str(self.report_date),
-            "generated_at_utc": datetime.utcnow().isoformat(),
+            "generated_at_utc": datetime.now(timezone.utc).isoformat(),
             "signals": parsed_data
         }
         with open(file_path, 'w') as f:
