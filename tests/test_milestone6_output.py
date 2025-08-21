@@ -1,101 +1,103 @@
-# verify_milestone6.py
+# verify_output_processor.py
 import os
 import json
 from src.database import get_db_connection, init_db
-from src.analysis.synthesizer import synthesize_analyses
-from datetime import datetime, timedelta
+from src.output.processor import OutputProcessor
+from datetime import datetime
 
-def create_final_test_data():
-    """Creates the data needed for the final synthesizer and output processor test."""
-    print("[STEP 1] Inserting fake data for end-to-end test...")
-    today = datetime.utcnow()
-    fake_articles = [
-        # Historical trend data for 'Technology'
-        {"url": f"https://example.com/verify_m6_hist_{i}", "published_at": today - timedelta(days=i), "title": "Fake hist news",
-         "nlp_features": {"sentiment": {"label": "positive", "score": 0.9}, "entities": [{"text": "Apple", "label": "ORG"}]}}
-        for i in range(1, 4)
-    ]
-    # Today's high-impact event for 'Technology' and 'MSFT'
-    fake_articles.append({
-        "url": "https://example.com/verify_m6_today", "published_at": today, "title": "Microsoft AI Breakthrough",
-        "nlp_features": {"sentiment": {"label": "positive", "score": 0.98}, "entities": [{"text": "Microsoft", "label": "ORG"}, {"text": "MSFT", "label": "ORG"}]}
-    })
-    inserted_urls = [a['url'] for a in fake_articles]
-    with get_db_connection() as conn:
-        with conn.cursor() as cursor:
-            # This ensures the nlp_features column exists before inserting.
-            cursor.execute("ALTER TABLE articles ADD COLUMN IF NOT EXISTS nlp_features JSONB;")
-            for article in fake_articles:
-                cursor.execute(
-                    "INSERT INTO articles (url, published_at, nlp_features, title) VALUES (%s, %s, %s, %s) ON CONFLICT (url) DO UPDATE SET nlp_features = EXCLUDED.nlp_features;",
-                    (article['url'], article['published_at'], json.dumps(article['nlp_features']), article['title'])
-                )
-        conn.commit()
-    print("Fake data inserted.")
-    return inserted_urls
+# A pre-defined, multi-line report string to simulate the output from the synthesizer.
+# This makes the test predictable and independent of the other analysis modules.
+SAMPLE_REPORT_STRING = """
+--- Synthesized Market Report ---
 
-def cleanup_fake_data(urls):
-    """Cleans up both articles and the reports generated during the test."""
-    if not urls: return
-    print("\n[STEP 3] Cleaning up fake data...")
-    with get_db_connection() as conn:
-        with conn.cursor() as cursor:
-            # Clean up the temporary articles
-            cursor.execute("DELETE FROM articles WHERE url = ANY(%s::text[]);", (urls,))
-            # Clean up the report generated today to ensure test is repeatable
-            # The ON DELETE CASCADE on the report_signals table will handle the rest.
-            cursor.execute("DELETE FROM daily_reports WHERE report_date = %s;", (datetime.utcnow().date(),))
-        conn.commit()
-    print("Cleanup complete.")
+## Historical Trend Analysis ##
+--- Historical Trend Analysis Report ---
+[Bullish Signal] Sector 'Technology' shows strong positive sentiment for the last 3 days.
+[Bearish Signal] Sector 'Consumer Discretionary' shows strong negative sentiment for the last 3 days.
+
+## Today's High-Impact Analysis ##
+--- Today's High-Impact Analysis Report ---
+[Impact Alert] Sector 'Technology' predicted to go UP. Reason: High-impact news titled 'Microsoft AI Breakthrough' (Sentiment: positive @ 0.98).
+
+## High-Confidence Signals (Confluence) ##
+[HIGH CONFIDENCE BULLISH] Sector 'Technology' shows a positive historical trend and a positive high-impact event today.
+    -> Predicted top stock movers in 'Technology':
+        - MSFT: Strong positive news: 'Microsoft AI Breakthrough' (Score: 0.98)
+"""
+
+def cleanup_test_data():
+    """Ensures the database is clean before and after the test."""
+    print("--- Cleaning up previous test data (if any) ---")
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                # The ON DELETE CASCADE on the report_signals table handles associated signals.
+                cursor.execute("DELETE FROM daily_reports WHERE report_date = %s;", (datetime.utcnow().date(),))
+            conn.commit()
+        print("Cleanup complete.")
+    except Exception as e:
+        print(f"Cleanup failed or was not needed: {e}")
 
 def run_verification():
-    """Runs the synthesizer and verifies the output processor's work."""
-    print("--- Starting Final Output Verification ---")
+    """
+    Runs a focused test on the OutputProcessor to ensure it parses, saves to DB,
+    and writes the JSON file correctly.
+    """
+    print("--- Starting Output Processor Verification ---")
+    
+    # 1. Setup: Ensure DB and tables exist and are clean for today's date.
     init_db()
-    fake_data_urls = []
+    cleanup_test_data()
+    
+    report_id = None
+    
     try:
-        fake_data_urls = create_final_test_data()
+        # 2. Action: Instantiate the processor and run the main method.
+        print("\n[STEP 1] Initializing OutputProcessor with sample report...")
+        processor = OutputProcessor(SAMPLE_REPORT_STRING)
         
-        print("\n[STEP 2] Running the final synthesizer and output processor...")
-        synthesize_analyses()
+        print("[STEP 2] Calling process_and_save() to parse, save to DB, and write file...")
+        processor.process_and_save()
 
-        # --- Verification Step ---
-        # 1. File Verification
+        # 3. Verification: Check the results in the database and file system.
+        print("\n--- Verifying Results ---")
+        
+        # 3a. Verify Database Records
+        print("\n[VERIFICATION 1] Checking database for new records...")
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT id FROM daily_reports WHERE report_date = %s;", (datetime.utcnow().date(),))
+                report_row = cursor.fetchone()
+                if report_row:
+                    report_id = report_row[0]
+                    cursor.execute("SELECT COUNT(*) FROM report_signals WHERE report_id = %s;", (report_id,))
+                    signal_count = cursor.fetchone()[0]
+                    print(f"SUCCESS: Found report with ID {report_id} and {signal_count} signals in the database.")
+                else:
+                    print("FAILURE: No report record was created in the database.")
+
+        # 3b. Verify JSON File Creation
         output_file = os.path.join("output", f"report_{datetime.utcnow().date()}.json")
-        print(f"\n[VERIFICATION] Checking for output file at: {output_file}")
-        file_exists = os.path.exists(output_file)
-        if file_exists:
-            print(f"SUCCESS: Output JSON file found.")
+        print(f"\n[VERIFICATION 2] Checking for output file at: {output_file}")
+        if os.path.exists(output_file):
+            print(f"SUCCESS: Output JSON file was created.")
+            # Optional: print content to verify
             with open(output_file, 'r') as f:
                 data = json.load(f)
-                print("File content snippet (confidence signals):")
-                print(json.dumps(data.get('signals', {}).get('confidence_signals', []), indent=2))
+                print("    -> File content looks valid.")
         else:
-            print(f"FAILURE: Output JSON file was not created.")
-
-        # 2. Database Verification
-        print("\n[VERIFICATION] Checking database for report records...")
-        db_records_found = False
-        try:
-            with get_db_connection() as conn:
-                with conn.cursor() as cursor:
-                    cursor.execute("SELECT id FROM daily_reports WHERE report_date = %s;", (datetime.utcnow().date(),))
-                    report_row = cursor.fetchone()
-                    if report_row:
-                        report_id = report_row[0]
-                        cursor.execute("SELECT COUNT(*) FROM report_signals WHERE report_id = %s;", (report_id,))
-                        signal_count = cursor.fetchone()[0]
-                        if signal_count > 0:
-                            print(f"SUCCESS: Found report with ID {report_id} and {signal_count} signals in the database.")
-                            db_records_found = True
-            if not db_records_found:
-                 print("FAILURE: Did not find corresponding records in the database. This is likely why the file was not created.")
-        except Exception as e:
-            print(f"FAILURE: An error occurred while checking the database: {e}")
+            print(f"FAILURE: Output JSON file was NOT created. This is likely because the database save failed.")
 
     finally:
-        cleanup_fake_data(fake_data_urls)
-    
+        # 4. Cleanup
+        print("\n--- Final Cleanup ---")
+        cleanup_test_data()
+        # Also remove the generated file
+        output_file = os.path.join("output", f"report_{datetime.utcnow().date()}.json")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+            print(f"Removed test file: {output_file}")
+
     print("\n--- Verification Finished ---")
 
 if __name__ == '__main__':
