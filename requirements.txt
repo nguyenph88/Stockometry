@@ -1,0 +1,10 @@
+psycopg2-binary
+requests
+yfinance
+pyyaml
+pydantic
+pydantic-settings
+apscheduler
+spacy
+transformers
+torch

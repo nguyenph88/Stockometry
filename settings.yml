@@ -1,0 +1,16 @@
+news_api:
+  base_url: "https://newsapi.org/v2/everything"
+  query_params:
+    q: "stock market OR regulation OR tariff OR subsidy"
+    language: "en"
+    sortBy: "publishedAt"
+    pageSize: 100
+
+market_data:
+  tickers:
+    - "AAPL"
+    - "MSFT"
+    - "GOOGL"
+    - "AMZN"
+    - "NVDA"
+  period: "1mo"
