@@ -1,7 +1,7 @@
 from .historical_analyzer import analyze_historical_trends, SECTOR_MAP
 from .today_analyzer import analyze_todays_impact
 from src.database import get_db_connection
-from datetime import datetime
+from datetime import datetime, timezone
 
 def synthesize_analyses():
     """
@@ -64,7 +64,7 @@ def predict_stocks_for_sector(sector: str):
     if not target_tickers:
         return None
 
-    today_date = datetime.utcnow().date()
+    today_date = datetime.now(timezone.utc).date()
     
     query = """
         SELECT nlp_features, title

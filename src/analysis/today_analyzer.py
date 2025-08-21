@@ -1,5 +1,5 @@
 from src.database import get_db_connection
-from datetime import datetime
+from datetime import datetime, timezone
 from .historical_analyzer import SECTOR_MAP # Reuse the sector map
 
 # Define keywords that signal a high-impact event
@@ -16,7 +16,7 @@ def analyze_todays_impact():
     """
     print("Starting analysis of today's high-impact news...")
     
-    today_date = datetime.utcnow().date()
+    today_date = datetime.now(timezone.utc).date()
     
     query = """
         SELECT title, description, nlp_features

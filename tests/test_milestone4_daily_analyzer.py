@@ -1,13 +1,13 @@
 import json
 from src.database import get_db_connection, init_db
 from src.analysis.today_analyzer import analyze_todays_impact
-from datetime import datetime
+from datetime import datetime, timezone
 
 def create_fake_todays_data():
     """Inserts fake processed articles published 'today' for testing."""
     print("[STEP 1] Inserting fake 'today' articles for impact analysis...")
     
-    today = datetime.utcnow()
+    today = datetime.now(timezone.utc)
     
     fake_articles = [
         # 1. High-impact due to keyword 'regulation'

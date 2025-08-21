@@ -2,7 +2,7 @@
 import json
 from src.database import get_db_connection, init_db
 from src.analysis.synthesizer import synthesize_analyses
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 def create_confluence_data():
     """
@@ -11,7 +11,7 @@ def create_confluence_data():
     """
     print("[STEP 1] Inserting fake data to create a high-confidence signal...")
     
-    today = datetime.utcnow()
+    today = datetime.now(timezone.utc)
     fake_articles = []
     
     # 1. Create the positive historical trend for 'Technology'
