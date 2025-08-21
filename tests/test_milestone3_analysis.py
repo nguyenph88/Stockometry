@@ -1,7 +1,7 @@
 import json
 from src.database import get_db_connection, init_db
 from src.analysis.historical_analyzer import analyze_historical_trends
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 def create_fake_trend_data():
     """Inserts fake processed articles to create a clear trend for testing."""
@@ -10,7 +10,7 @@ def create_fake_trend_data():
     # Create a strong positive trend for the 'Technology' sector over the last 3 days
     fake_articles = []
     for i in range(1, 4):
-        day = datetime.utcnow() - timedelta(days=i)
+        day = datetime.now(timezone.utc) - timedelta(days=i)
         article = {
             "url": f"https://example.com/verify_m3_tech_positive_{i}",
             "published_at": day,
@@ -23,7 +23,7 @@ def create_fake_trend_data():
 
     # Create a strong negative trend for 'Consumer Discretionary'
     for i in range(1, 4):
-        day = datetime.utcnow() - timedelta(days=i)
+        day = datetime.now(timezone.utc) - timedelta(days=i)
         article = {
             "url": f"https://example.com/verify_m3_consumer_negative_{i}",
             "published_at": day,

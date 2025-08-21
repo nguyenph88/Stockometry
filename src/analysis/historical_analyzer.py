@@ -2,7 +2,7 @@
 import pandas as pd
 from collections import defaultdict
 from src.database import get_db_connection
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 # A simple mapping of company tickers/names to sectors.
 # In a real-world application, this would be more extensive or come from an external source.
@@ -21,7 +21,7 @@ def analyze_historical_trends():
     print("Starting historical trend analysis...")
     
     # Define the time range: from 7 days ago up to yesterday.
-    end_date = datetime.utcnow().date()
+    end_date = datetime.now(timezone.utc).date()
     start_date = end_date - timedelta(days=7)
     
     query = """
