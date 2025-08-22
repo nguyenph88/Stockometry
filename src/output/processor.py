@@ -5,9 +5,17 @@ from datetime import datetime
 from src.database import get_db_connection
 
 class OutputProcessor:
-    def __init__(self, report_object: dict):
+    def __init__(self, report_object: dict, run_source: str = "SCHEDULED"):
+        """
+        Initialize the OutputProcessor with a report object and run source.
+        
+        Args:
+            report_object (dict): The analysis report to process
+            run_source (str): Source of the run - "ONDEMAND" or "SCHEDULED"
+        """
         self.report_object = report_object
         self.report_date = datetime.utcnow().date()
+        self.run_source = run_source.upper()  # Normalize to uppercase
         self.output_dir = "output"
         os.makedirs(self.output_dir, exist_ok=True)
         self._init_db_tables()
@@ -15,18 +23,35 @@ class OutputProcessor:
     def _init_db_tables(self):
         with get_db_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("CREATE TABLE IF NOT EXISTS daily_reports (id SERIAL PRIMARY KEY, report_date DATE UNIQUE NOT NULL, summary TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP);")
+            # Add run_source column to daily_reports table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS daily_reports (
+                    id SERIAL PRIMARY KEY, 
+                    report_date DATE UNIQUE NOT NULL, 
+                    summary TEXT, 
+                    run_source VARCHAR(20) DEFAULT 'SCHEDULED',
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                );
+            """)
+            
+            # Add run_source column if it doesn't exist (for existing databases)
+            try:
+                cursor.execute("ALTER TABLE daily_reports ADD COLUMN run_source VARCHAR(20) DEFAULT 'SCHEDULED';")
+            except Exception:
+                # Column already exists, ignore
+                pass
+            
             cursor.execute("CREATE TABLE IF NOT EXISTS report_signals (id SERIAL PRIMARY KEY, report_id INTEGER REFERENCES daily_reports(id) ON DELETE CASCADE, signal_type VARCHAR(50) NOT NULL, sector VARCHAR(255), direction VARCHAR(50), details TEXT, stock_symbol VARCHAR(20));")
             # New table to store source articles for each signal
             cursor.execute("CREATE TABLE IF NOT EXISTS signal_sources (id SERIAL PRIMARY KEY, signal_id INTEGER REFERENCES report_signals(id) ON DELETE CASCADE, title TEXT, url TEXT UNIQUE);")
             conn.commit()
 
     def process_and_save(self):
-        print("Processing and saving the final report...")
+        print(f"Processing and saving the final report (Source: {self.run_source})...")
         report_id = self._save_to_db()
         if report_id:
             self._save_to_json(report_id)
-            print("Report processing and saving complete.")
+            print(f"Report processing and saving complete. Run source: {self.run_source}")
 
     def _save_to_db(self):
         summary = self.report_object['executive_summary']
@@ -34,7 +59,10 @@ class OutputProcessor:
         try:
             with get_db_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute("INSERT INTO daily_reports (report_date, summary) VALUES (%s, %s) ON CONFLICT (report_date) DO UPDATE SET summary = EXCLUDED.summary RETURNING id;", (self.report_date, summary))
+                cursor.execute(
+                    "INSERT INTO daily_reports (report_date, summary, run_source) VALUES (%s, %s, %s) ON CONFLICT (report_date) DO UPDATE SET summary = EXCLUDED.summary, run_source = EXCLUDED.run_source RETURNING id;", 
+                    (self.report_date, summary, self.run_source)
+                )
                 report_id = cursor.fetchone()[0]
                 cursor.execute("DELETE FROM report_signals WHERE report_id = %s;", (report_id,))
 
@@ -66,8 +94,9 @@ class OutputProcessor:
             "report_id": report_id,
             "report_date": str(self.report_date),
             "generated_at_utc": datetime.utcnow().isoformat(),
+            "run_source": self.run_source,  # Add run source to JSON output
             **self.report_object
         }
         with open(file_path, 'w') as f:
             json.dump(output_data, f, indent=4)
-        print(f"Report saved to {file_path}")
+        print(f"Report saved to {file_path} (Run source: {self.run_source})")

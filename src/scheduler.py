@@ -17,7 +17,8 @@ def run_synthesis_and_save():
     
     # Step 2: If a report was successfully generated, process and save it.
     if report_object:
-        processor = OutputProcessor(report_object)
+        # Mark this as a SCHEDULED run
+        processor = OutputProcessor(report_object, run_source="SCHEDULED")
         processor.process_and_save()
     else:
         print("Synthesizer did not return a report. Skipping output processing.")

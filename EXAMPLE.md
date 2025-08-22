@@ -14,6 +14,7 @@ Each JSON file represents a single day's analysis and contains the following top
 | `report_date`       | String | The date (UTC) for which the analysis was performed, in `YYYY-MM-DD` format.                              | `"2025-08-21"`                 |
 | `generated_at_utc`  | String | The precise timestamp (UTC) when the report was generated, in ISO 8601 format.                            | `"2025-08-21T02:30:00.123456"`  |
 | `executive_summary` | String | A human-readable summary of the day's key findings and signals.                                          | `"A consistent bullish trend was observed..."` |
+| `run_source`        | String | **New!** Indicates whether the report was generated from "ONDEMAND" or "SCHEDULED" run.                  | `"ONDEMAND"` or `"SCHEDULED"`   |
 | `signals`           | Object | The core of the report, containing all the analytical signals. See detailed breakdown below.              | `{...}`                        |
 
 ---
@@ -256,6 +257,7 @@ The highest-priority signals where historical trends and today's impact events a
   "report_id": 42,
   "report_date": "2025-08-21",
   "generated_at_utc": "2025-08-21T02:30:00.123456",
+  "run_source": "ONDEMAND",
   "executive_summary": "A consistent bullish trend was observed for the 'Technology' sector. A consistent bearish trend was observed for the 'Financial Services' sector. A high-impact event for the 'Technology' sector suggests a short-term move up. A high-impact event for the 'Healthcare' sector suggests a short-term move down. High-confidence bullish signals were found for the following sectors: Technology.",
   "signals": {
     "historical": [
@@ -393,9 +395,51 @@ The highest-priority signals where historical trends and today's impact events a
 
 ---
 
+## Run Source Tracking
+
+The system now tracks whether each report was generated from an **ONDEMAND** or **SCHEDULED** run:
+
+### 🚀 **ONDEMAND Runs**
+- **Triggered by**: Manual execution of `rune_once.py`
+- **Use case**: Fresh data collection, testing, manual analysis
+- **Database field**: `run_source = "ONDEMAND"`
+- **JSON field**: `"run_source": "ONDEMAND"`
+
+### ⏰ **SCHEDULED Runs**
+- **Triggered by**: Automated scheduler (daily at 2:30 AM UTC)
+- **Use case**: Regular automated market analysis
+- **Database field**: `run_source = "SCHEDULED"`
+- **JSON field**: `"run_source": "SCHEDULED"`
+
+### 📊 **Database Query Examples**
+```sql
+-- Get all ONDEMAND reports
+SELECT * FROM daily_reports WHERE run_source = 'ONDEMAND';
+
+-- Get all SCHEDULED reports
+SELECT * FROM daily_reports WHERE run_source = 'SCHEDULED';
+
+-- Count reports by source
+SELECT run_source, COUNT(*) FROM daily_reports GROUP BY run_source;
+
+-- Get today's reports by source
+SELECT run_source, COUNT(*) 
+FROM daily_reports 
+WHERE report_date = CURRENT_DATE 
+GROUP BY run_source;
+```
+
+### 🔍 **Check Run Sources**
+Use the utility script to check run sources:
+```bash
+python check_run_sources.py                    # Check recent reports
+python check_run_sources.py 2025-08-21        # Check specific date
+```
+
 ## Data Quality & Reliability
 
 - **Source Tracking**: Every signal includes verifiable source articles
+- **Run Source Tracking**: Every report tracks ONDEMAND vs SCHEDULED origin
 - **Sentiment Analysis**: Advanced NLP with FinBERT financial sentiment model
 - **Entity Recognition**: Comprehensive company and sector mapping
 - **Historical Validation**: 6-day trend analysis for signal reliability
