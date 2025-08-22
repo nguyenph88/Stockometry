@@ -66,7 +66,7 @@ Ultimately, **6 days is a strategic sweet spot**. It's designed to be:
 
 ## 📈 A patient analyst, not a hyperactive trader
 
-### Q: With the algorithm, some days it does not have any signal in the report. Is it a bug? I thought its supposed to give some signal everyday.
+### Q: With the algorithm, some days it does not have any signal in the report. Is it a bug? I thought it's supposed to give some signals (or at least one) daily.
 
 **A:** Yes, that is absolutely correct and is the intended design of the algorithm. It's a feature, not a bug. The bot is designed to act like a patient analyst, not a hyperactive trader. Its primary goal is to identify high-confidence opportunities, and those don't happen every single day.
 
