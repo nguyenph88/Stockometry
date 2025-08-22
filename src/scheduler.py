@@ -19,8 +19,20 @@ def run_synthesis_and_save():
     if report_object:
         # Mark this as a SCHEDULED run
         processor = OutputProcessor(report_object, run_source="SCHEDULED")
-        processor.process_and_save()
-        print("Scheduled report saved with filename format: report_YYYY-MM-DD_HHMMSS_scheduled.json")
+        report_id = processor.process_and_save()
+        
+        if report_id:
+            print("Scheduled report saved to database successfully")
+            print("Report ID:", report_id)
+            
+            # Optional: Export to JSON if needed
+            json_data = processor.export_to_json(report_id=report_id)
+            if json_data:
+                print("JSON export available on demand")
+            else:
+                print("JSON export failed")
+        else:
+            print("Failed to save scheduled report to database")
     else:
         print("Synthesizer did not return a report. Skipping output processing.")
 

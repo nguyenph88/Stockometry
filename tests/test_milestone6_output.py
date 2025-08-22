@@ -1,6 +1,11 @@
 # verify_output_processor.py
 import os
+import sys
 import json
+
+# Add the project root to the Python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from src.database import get_db_connection, init_db
 from src.output.processor import OutputProcessor
 from datetime import datetime, timezone
@@ -41,7 +46,7 @@ def cleanup_test_data():
 def run_verification():
     """
     Runs a focused test on the OutputProcessor to ensure it parses, saves to DB,
-    and writes the JSON file correctly.
+    and exports JSON correctly.
     """
     print("--- Starting Output Processor Verification ---")
     
@@ -56,10 +61,14 @@ def run_verification():
         print("\n[STEP 1] Initializing OutputProcessor with sample report...")
         processor = OutputProcessor(SAMPLE_REPORT_STRING)
         
-        print("[STEP 2] Calling process_and_save() to parse, save to DB, and write file...")
-        processor.process_and_save()
+        print("[STEP 2] Calling process_and_save() to parse and save to DB...")
+        report_id = processor.process_and_save()
+        
+        if not report_id:
+            print("FAILURE: process_and_save() returned None - database save failed")
+            return
 
-        # 3. Verification: Check the results in the database and file system.
+        # 3. Verification: Check the results in the database and test export functionality.
         print("\n--- Verifying Results ---")
         
         # 3a. Verify Database Records
@@ -76,29 +85,37 @@ def run_verification():
                 else:
                     print("FAILURE: No report record was created in the database.")
 
-        # 3b. Verify JSON File Creation
-        output_file = os.path.join("output", f"report_{datetime.now(timezone.utc).date()}.json")
-        print(f"\n[VERIFICATION 2] Checking for output file at: {output_file}")
-        if os.path.exists(output_file):
-            print(f"SUCCESS: Output JSON file was created.")
-            # Optional: print content to verify
-            with open(output_file, 'r') as f:
-                data = json.load(f)
-                print("    -> File content looks valid.")
+        # 3b. Test JSON Export Functionality
+        print("\n[VERIFICATION 2] Testing JSON export functionality...")
+        json_data = processor.export_to_json(report_id=report_id)
+        
+        if json_data:
+            print("SUCCESS: JSON export functionality working correctly.")
+            print(f"    -> Report ID: {json_data.get('report_id')}")
+            print(f"    -> Report Date: {json_data.get('report_date')}")
+            print(f"    -> Run Source: {json_data.get('run_source')}")
+            print(f"    -> Executive Summary: {json_data.get('executive_summary', 'MISSING!')[:100]}...")
+            
+            # Test file export
+            file_path = processor.save_json_to_file(json_data, "exports")
+            if file_path and os.path.exists(file_path):
+                print(f"SUCCESS: JSON file export working: {file_path}")
+            else:
+                print("FAILURE: JSON file export failed")
         else:
-            print(f"FAILURE: Output JSON file was NOT created. This is likely because the database save failed.")
+            print("FAILURE: JSON export functionality failed")
 
     finally:
         # 4. Cleanup
         print("\n--- Final Cleanup ---")
         cleanup_test_data()
-        # Also remove the generated file
-        # output_file = os.path.join("output", f"report_{datetime.now(timezone.utc).date()}.json")
-        # if os.path.exists(output_file):
-        #     os.remove(output_file)
-        #     print(f"Removed test file: {output_file}")
+        
+        # Clean up any test export files
+        if os.path.exists("exports"):
+            for file in os.listdir("exports"):
+                if file.startswith(f"report_{datetime.now(timezone.utc).date()}_") and file.endswith("_scheduled.json"):
+                    os.remove(os.path.join("exports", file))
+                    print(f"Removed test export file: {file}")
 
-    print("\n--- Verification Finished ---")
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     run_verification()

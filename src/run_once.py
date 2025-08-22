@@ -39,9 +39,25 @@ def run_analysis_and_save():
         logger.info("Report generated successfully, processing and saving...")
         # Mark this as an ONDEMAND run
         processor = OutputProcessor(report_object, run_source="ONDEMAND")
-        processor.process_and_save()
-        logger.info("Report saved to database and JSON file (ONDEMAND)")
-        return True
+        report_id = processor.process_and_save()
+        
+        if report_id:
+            logger.info("Report saved to database (ONDEMAND)")
+            
+            # Optional: Export to JSON if needed
+            logger.info("Exporting report to JSON format...")
+            json_data = processor.export_to_json(report_id=report_id)
+            if json_data:
+                logger.info("JSON export successful")
+                # Optionally save to file for backup
+                processor.save_json_to_file(json_data, "exports")
+            else:
+                logger.warning("JSON export failed")
+            
+            return True
+        else:
+            logger.error("Failed to save report to database")
+            return False
     else:
         logger.error("Synthesizer did not return a report")
         return False
@@ -94,9 +110,8 @@ def run_job_now():
         runtime = end_time - start_time
         
         logger.info(f"Production run completed successfully in {runtime:.2f} seconds")
-        logger.info("Check the 'output/' directory for the generated JSON report")
-        logger.info("Filename format: report_YYYY-MM-DD_HHMMSS_ondemand.json")
         logger.info("Data has been saved to the production database")
+        logger.info("JSON export available on demand using export_reports.py")
         logger.info("Run completed independently - no scheduler needed")
         
     except Exception as e:
@@ -125,8 +140,7 @@ if __name__ == '__main__':
             print("Articles processed with NLP")
             print("Market analysis completed")
             print("Results saved to production database")
-            print("JSON report generated in 'output/' directory")
-            print("Filename format: report_YYYY-MM-DD_HHMMSS_ondemand.json")
+            print("JSON export available on demand using export_reports.py")
             print("Run completed independently - no scheduler needed")
             print("="*60)
         else:
