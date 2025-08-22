@@ -18,7 +18,7 @@ apis:
 
 # --- Database Configuration ---
 database:
-  host: 10.0.0.104
+  host: 10.0.0.100
   port: 5432
   name: stockometry
   user: postgres

@@ -15,7 +15,7 @@ class TestNewsCollector(unittest.TestCase):
         """Test successful news collection and storage."""
         # Mock settings
         mock_settings.news_api_key = "test-api-key"
-        mock_settings.api.news_api = {
+        mock_settings.news_api = {
             "base_url": "https://newsapi.org/v2/everything",
             "query_params": {"q": "stocks", "language": "en"}
         }
@@ -64,7 +64,7 @@ class TestNewsCollector(unittest.TestCase):
         """Test news collector when no articles are returned."""
         # Mock settings
         mock_settings.news_api_key = "test-api-key"
-        mock_settings.api.news_api = {
+        mock_settings.news_api = {
             "base_url": "https://newsapi.org/v2/everything",
             "query_params": {"q": "stocks", "language": "en"}
         }
@@ -87,7 +87,7 @@ class TestNewsCollector(unittest.TestCase):
         """Test news collector when API returns an error."""
         # Mock settings
         mock_settings.news_api_key = "test-api-key"
-        mock_settings.api.news_api = {
+        mock_settings.news_api = {
             "base_url": "https://newsapi.org/v2/everything",
             "query_params": {"q": "stocks", "language": "en"}
         }
@@ -108,7 +108,7 @@ class TestNewsCollector(unittest.TestCase):
         """Test news collector when database operations fail."""
         # Mock settings
         mock_settings.news_api_key = "test-api-key"
-        mock_settings.api.news_api = {
+        mock_settings.news_api = {
             "base_url": "https://newsapi.org/v2/everything",
             "query_params": {"q": "stocks", "language": "en"}
         }
@@ -148,7 +148,7 @@ class TestMarketDataCollector(unittest.TestCase):
     def test_market_data_collector_success(self, mock_settings, mock_yf_download, mock_db_conn):
         """Test successful market data collection and storage."""
         # Mock settings
-        mock_settings.api.market_data = {
+        mock_settings.market_data = {
             "tickers": ["AAPL", "GOOGL"],
             "period": "1mo"
         }
@@ -187,7 +187,7 @@ class TestMarketDataCollector(unittest.TestCase):
     def test_market_data_collector_single_ticker(self, mock_settings, mock_yf_download, mock_db_conn):
         """Test market data collector with single ticker."""
         # Mock settings
-        mock_settings.api.market_data = {
+        mock_settings.market_data = {
             "tickers": ["AAPL"],
             "period": "1mo"
         }
@@ -220,7 +220,7 @@ class TestMarketDataCollector(unittest.TestCase):
     def test_market_data_collector_no_tickers(self, mock_settings):
         """Test market data collector when no tickers are defined."""
         # Mock settings with no tickers
-        mock_settings.api.market_data = {
+        mock_settings.market_data = {
             "tickers": [],
             "period": "1mo"
         }
@@ -235,7 +235,7 @@ class TestMarketDataCollector(unittest.TestCase):
     def test_market_data_collector_empty_data(self, mock_settings, mock_yf_download):
         """Test market data collector when yfinance returns empty data."""
         # Mock settings
-        mock_settings.api.market_data = {
+        mock_settings.market_data = {
             "tickers": ["AAPL"],
             "period": "1mo"
         }
@@ -253,7 +253,7 @@ class TestMarketDataCollector(unittest.TestCase):
     def test_market_data_collector_yfinance_error(self, mock_settings, mock_yf_download):
         """Test market data collector when yfinance fails."""
         # Mock settings
-        mock_settings.api.market_data = {
+        mock_settings.market_data = {
             "tickers": ["AAPL"],
             "period": "1mo"
         }
@@ -273,7 +273,7 @@ class TestMarketDataCollector(unittest.TestCase):
     def test_market_data_collector_database_error(self, mock_settings, mock_yf_download, mock_db_conn):
         """Test market data collector when database operations fail."""
         # Mock settings
-        mock_settings.api.market_data = {
+        mock_settings.market_data = {
             "tickers": ["AAPL"],
             "period": "1mo"
         }

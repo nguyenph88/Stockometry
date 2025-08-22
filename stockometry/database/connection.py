@@ -179,7 +179,7 @@ def init_db(dbname=None):
             conn.commit()
         print("Database tables checked/created successfully.")
     except psycopg2.OperationalError as e:
-        print(f"Could not connect to PostgreSQL. Is the server running and are your credentials in .env correct? Error: {e}")
+        print(f"Could not connect to PostgreSQL. Is the server running and are your credentials in the configuration correct? Error: {e}")
         exit(1)
     except Exception as e:
         print(f"An error occurred during database initialization: {e}")

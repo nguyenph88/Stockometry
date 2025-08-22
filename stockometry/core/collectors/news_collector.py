@@ -7,10 +7,10 @@ def fetch_and_store_news():
     print("Fetching news from NewsAPI...")
     params = {
         "apiKey": settings.news_api_key,
-        **settings.api.news_api.get("query_params", {})
+        **settings.news_api.get("query_params", {})
     }
     try:
-        response = requests.get(settings.api.news_api["base_url"], params=params)
+        response = requests.get(settings.news_api["base_url"], params=params)
         response.raise_for_status()
         articles = response.json().get("articles", [])
 

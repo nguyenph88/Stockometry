@@ -5,11 +5,11 @@ from ...database import get_db_connection
 
 def fetch_and_store_market_data():
     """Fetches historical market data and stores it in the database."""
-    tickers = settings.api.market_data.get("tickers", [])
-    period = settings.api.market_data.get("period", "1mo")
+    tickers = settings.market_data.get("tickers", [])
+    period = settings.market_data.get("period", "1mo")
     
     if not tickers:
-        print("No tickers defined in settings.yml. Skipping market data collection.")
+        print("No tickers defined in configuration. Skipping market data collection.")
         return
         
     print(f"Fetching market data for tickers: {tickers}...")
