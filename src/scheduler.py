@@ -1,4 +1,3 @@
-# src/scheduler.py
 from apscheduler.schedulers.blocking import BlockingScheduler
 from src.database import init_db
 from src.collectors.news_collector import fetch_and_store_news
