@@ -93,10 +93,10 @@ def run_verification():
         print("\n--- Final Cleanup ---")
         cleanup_test_data()
         # Also remove the generated file
-        output_file = os.path.join("output", f"report_{datetime.utcnow().date()}.json")
-        if os.path.exists(output_file):
-            os.remove(output_file)
-            print(f"Removed test file: {output_file}")
+        # output_file = os.path.join("output", f"report_{datetime.utcnow().date()}.json")
+        # if os.path.exists(output_file):
+        #     os.remove(output_file)
+        #     print(f"Removed test file: {output_file}")
 
     print("\n--- Verification Finished ---")
 
