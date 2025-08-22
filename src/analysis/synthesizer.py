@@ -1,114 +1,95 @@
+# src/analysis/synthesizer.py
 from .historical_analyzer import analyze_historical_trends, SECTOR_MAP
 from .today_analyzer import analyze_todays_impact
 from src.database import get_db_connection
-from datetime import datetime, timezone
+from datetime import datetime
 
 def synthesize_analyses():
     """
-    Runs both historical and today's analysis and compares them to generate a final report.
-    Also implements the "Advanced Mode" to predict specific stock symbols.
+    Runs all analyses, generates an executive summary, and creates a final
+    structured report object for processing.
     """
     print("--- Starting Final Analysis Synthesis ---")
     
-    # Step 1: Run the underlying analyses
-    historical_report = analyze_historical_trends()
-    today_report = analyze_todays_impact()
+    historical_result = analyze_historical_trends()
+    today_result = analyze_todays_impact()
     
-    # --- Step 2: Logic to compare and conclude ---
-    # This is a simple rule-based system. A more complex version could use scoring.
-    final_report_lines = ["--- Synthesized Market Report ---"]
-    final_report_lines.append("\n## Historical Trend Analysis ##")
-    final_report_lines.append(historical_report)
-    final_report_lines.append("\n## Today's High-Impact Analysis ##")
-    final_report_lines.append(today_report)
+    all_signals = historical_result['signals'] + today_result['signals']
     
-    # Example of a simple synthesis rule:
-    # Look for confluence where a historical trend is confirmed by a daily event.
-    bullish_trend_sectors = [s.split("'")[1] for s in historical_report.split('\n') if "Bullish Signal" in s]
-    bullish_impact_sectors = [s.split("'")[1] for s in today_report.split('\n') if "predicted to go UP" in s]
+    # --- Confluence Logic ---
+    bullish_trends = {s['sector'] for s in historical_result['signals'] if s['direction'] == 'Bullish'}
+    impact_up = {s['sector'] for s in today_result['signals'] if s['direction'] == 'UP'}
+    high_confidence_bullish = bullish_trends & impact_up
     
-    high_confidence_bullish = set(bullish_trend_sectors) & set(bullish_impact_sectors)
-    
-    final_report_lines.append("\n## High-Confidence Signals (Confluence) ##")
-    if high_confidence_bullish:
-        for sector in high_confidence_bullish:
-            final_report_lines.append(
-                f"[HIGH CONFIDENCE BULLISH] Sector '{sector}' shows a positive historical trend and a positive high-impact event today."
-            )
-            # --- Step 3: Advanced Mode - Predict Stock Symbols ---
-            predicted_stocks = predict_stocks_for_sector(sector)
-            if predicted_stocks:
-                final_report_lines.append(f"    -> Predicted top stock movers in '{sector}':")
-                for stock, reason in predicted_stocks.items():
-                    final_report_lines.append(f"        - {stock}: {reason}")
-            else:
-                final_report_lines.append(f"    -> Could not identify specific stock movers in '{sector}'.")
-    else:
-        final_report_lines.append("No high-confidence signals where historical trends and today's events align.")
+    confidence_signals = []
+    for sector in high_confidence_bullish:
+        predicted_stocks = predict_stocks_for_sector(sector)
+        # Aggregate source articles from both trend and impact signals
+        sources = next((s['source_articles'] for s in historical_result['signals'] if s['sector'] == sector), []) + \
+                  next((s['source_articles'] for s in today_result['signals'] if s['sector'] == sector), [])
         
-    final_report = "\n".join(final_report_lines)
+        confidence_signals.append({
+            "type": "CONFIDENCE", "direction": "BULLISH", "sector": sector,
+            "predicted_stocks": predicted_stocks or [],
+            "source_articles": list({v['url']:v for v in sources}.values()) # Unique sources
+        })
+
+    # --- Executive Summary Generation ---
+    summary_points = historical_result['summary_points'] + today_result['summary_points']
+    if high_confidence_bullish:
+        summary_points.append(f"High-confidence bullish signals were found for the following sectors: {', '.join(high_confidence_bullish)}.")
+    
+    executive_summary = " ".join(summary_points)
+    
+    # --- Final Report Object ---
+    final_report_object = {
+        "executive_summary": executive_summary,
+        "signals": {
+            "historical": historical_result['signals'],
+            "impact": today_result['signals'],
+            "confidence": confidence_signals
+        }
+    }
+    
     print("\n" + "="*50)
-    print(final_report)
+    print("FINAL REPORT OBJECT GENERATED:")
+    import json
+    print(json.dumps(final_report_object, indent=2))
     print("="*50 + "\n")
-    return final_report
+    
+    return final_report_object
 
 def predict_stocks_for_sector(sector: str):
-    """
-    Advanced Mode: For a given sector, find the stocks with the most positive news today.
-    """
+    """Advanced Mode: Predicts individual stock movers for a sector."""
     print(f"Running Advanced Mode for sector: {sector}")
-    
-    # Find all tickers associated with the target sector
     target_tickers = [ticker for ticker, s in SECTOR_MAP.items() if s == sector]
-    
-    if not target_tickers:
-        return None
-
-    today_date = datetime.now(timezone.utc).date()
-    
-    query = """
-        SELECT nlp_features, title
-        FROM articles
-        WHERE nlp_features IS NOT NULL
-        AND published_at::date = %s;
-    """
+    if not target_tickers: return []
+    today_date = datetime.utcnow().date()
+    query = "SELECT nlp_features, title, url FROM articles WHERE nlp_features IS NOT NULL AND published_at::date = %s;"
     
     try:
         with get_db_connection() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(query, (today_date,))
-                todays_articles = cursor.fetchall()
-        
-        stock_scores = {}
-
-        for features, title in todays_articles:
-            sentiment = features.get('sentiment', {})
-            entities = features.get('entities', [])
+            cursor = conn.cursor()
+            cursor.execute(query, (today_date,))
+            todays_articles = cursor.fetchall()
             
-            if sentiment.get('label') != 'positive':
-                continue
-
-            for entity in entities:
-                # Check if the entity is one of our target tickers
+        stock_scores = {}
+        for features, title, url in todays_articles:
+            sentiment = features.get('sentiment', {})
+            if sentiment.get('label') != 'positive': continue
+            for entity in features.get('entities', []):
                 if entity.get('text') in target_tickers:
                     ticker = entity['text']
                     score = sentiment.get('score', 0)
-                    # Use the highest score for a given stock
-                    if score > stock_scores.get(ticker, (0, ''))[0]:
-                         stock_scores[ticker] = (score, title)
+                    if score > stock_scores.get(ticker, {}).get('score', 0):
+                         stock_scores[ticker] = {"score": score, "reason": title, "url": url}
         
-        if not stock_scores:
-            return None
-            
-        # Sort stocks by sentiment score, descending
-        sorted_stocks = sorted(stock_scores.items(), key=lambda item: item[1][0], reverse=True)
+        if not stock_scores: return []
         
-        # Return the top stocks with their reason (the news title)
-        return {stock: f"Strong positive news: '{reason}' (Score: {score:.2f})" for stock, (score, reason) in sorted_stocks[:2]} # Return top 2
+        sorted_stocks = sorted(stock_scores.items(), key=lambda item: item[1]['score'], reverse=True)
+        
+        return [{"symbol": stock, "reason": data['reason'], "url": data['url'], "score": round(data['score'], 4)} for stock, data in sorted_stocks[:2]]
 
     except Exception as e:
-        print(f"An error occurred during stock prediction: {e}")
-        return None
-
-if __name__ == '__main__':
-    synthesize_analyses()
+        print(f"An error during stock prediction: {e}")
+        return []
