@@ -1,0 +1,22 @@
+# FastAPI Integration Requirements
+# Install these in your FastAPI project to use Stockometry
+
+# Core FastAPI dependencies
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+
+# Stockometry dependencies (if not installed as a package)
+# Uncomment these if you're not installing Stockometry as a package
+# psycopg2-binary>=2.9.0
+# yfinance>=0.2.0
+# requests>=2.31.0
+# spacy>=3.7.0
+# transformers>=4.35.0
+# torch>=2.0.0
+# apscheduler>=3.10.0
+# pyyaml>=6.0.0
+
+# Optional: Additional FastAPI features
+python-multipart>=0.0.6  # For file uploads
+python-jose[cryptography]>=3.3.0  # For JWT authentication
+passlib[bcrypt]>=1.7.4  # For password hashing
