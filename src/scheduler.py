@@ -20,6 +20,7 @@ def run_synthesis_and_save():
         # Mark this as a SCHEDULED run
         processor = OutputProcessor(report_object, run_source="SCHEDULED")
         processor.process_and_save()
+        print("📁 Scheduled report saved with filename format: report_YYYY-MM-DD_HHMMSS_scheduled.json")
     else:
         print("Synthesizer did not return a report. Skipping output processing.")
 

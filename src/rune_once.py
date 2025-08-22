@@ -94,6 +94,7 @@ def run_job_now():
         
         logger.info(f"🎉 Production run completed successfully in {runtime:.2f} seconds")
         logger.info("📁 Check the 'output/' directory for the generated JSON report")
+        logger.info("📁 Filename format: report_YYYY-MM-DD_HHMMSS_ondemand.json")
         logger.info("💾 Data has been saved to the production database")
         logger.info("🔒 Run completed independently - no scheduler needed")
         
@@ -124,6 +125,7 @@ if __name__ == '__main__':
             print("🔍 Market analysis completed")
             print("💾 Results saved to production database")
             print("📁 JSON report generated in 'output/' directory")
+            print("📁 Filename format: report_YYYY-MM-DD_HHMMSS_ondemand.json")
             print("🔒 Run completed independently - no scheduler needed")
             print("="*60)
         else:

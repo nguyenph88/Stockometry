@@ -1,7 +1,7 @@
 # src/output/processor.py
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from src.database import get_db_connection
 
 class OutputProcessor:
@@ -14,7 +14,7 @@ class OutputProcessor:
             run_source (str): Source of the run - "ONDEMAND" or "SCHEDULED"
         """
         self.report_object = report_object
-        self.report_date = datetime.utcnow().date()
+        self.report_date = datetime.now(timezone.utc).date()
         self.run_source = run_source.upper()  # Normalize to uppercase
         self.output_dir = "output"
         os.makedirs(self.output_dir, exist_ok=True)
@@ -89,11 +89,15 @@ class OutputProcessor:
             return None
 
     def _save_to_json(self, report_id):
-        file_path = os.path.join(self.output_dir, f"report_{self.report_date}.json")
+        # Create a more descriptive filename with timestamp and run source
+        timestamp = datetime.now(timezone.utc).strftime("%H%M%S")
+        run_source_lower = self.run_source.lower()
+        file_path = os.path.join(self.output_dir, f"report_{self.report_date}_{timestamp}_{run_source_lower}.json")
+        
         output_data = {
             "report_id": report_id,
             "report_date": str(self.report_date),
-            "generated_at_utc": datetime.utcnow().isoformat(),
+            "generated_at_utc": datetime.now(timezone.utc).isoformat(),
             "run_source": self.run_source,  # Add run source to JSON output
             **self.report_object
         }

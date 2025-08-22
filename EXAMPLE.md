@@ -436,6 +436,15 @@ python check_run_sources.py                    # Check recent reports
 python check_run_sources.py 2025-08-21        # Check specific date
 ```
 
+### 📁 **File Naming Convention**
+JSON reports now include time and run source in the filename:
+- **ONDEMAND runs**: `report_YYYY-MM-DD_HHMMSS_ondemand.json`
+- **SCHEDULED runs**: `report_YYYY-MM-DD_HHMMSS_scheduled.json`
+
+**Examples:**
+- `report_2025-08-21_143052_ondemand.json` (August 21, 2025 at 14:30:52 UTC, ONDEMAND)
+- `report_2025-08-21_023000_scheduled.json` (August 21, 2025 at 02:30:00 UTC, SCHEDULED)
+
 ## Data Quality & Reliability
 
 - **Source Tracking**: Every signal includes verifiable source articles

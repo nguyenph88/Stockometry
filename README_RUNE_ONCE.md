@@ -73,13 +73,14 @@ if success:
 🔍 [STEP 5/5] Running analysis and saving to production database...
 ✅ Analysis and database save completed
 🎉 Production run completed successfully in 45.23 seconds
+📁 Check the 'output/' directory for the generated JSON report
 ```
 
 ### Log File
 Detailed logs are saved to `rune_once.log` with timestamps and log levels.
 
 ### Generated Files
-- **JSON Report**: `output/report_YYYY-MM-DD.json`
+- **JSON Report**: `output/report_YYYY-MM-DD_HHMMSS_ondemand.json` (includes time and run source)
 - **Database**: Results saved to production database
 - **Log File**: `rune_once.log` with detailed execution logs
 

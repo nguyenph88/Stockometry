@@ -3,7 +3,7 @@ import os
 import json
 from src.database import get_db_connection, init_db
 from src.output.processor import OutputProcessor
-from datetime import datetime
+from datetime import datetime, timezone
 
 # A pre-defined, multi-line report string to simulate the output from the synthesizer.
 # This makes the test predictable and independent of the other analysis modules.
@@ -32,7 +32,7 @@ def cleanup_test_data():
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
                 # The ON DELETE CASCADE on the report_signals table handles associated signals.
-                cursor.execute("DELETE FROM daily_reports WHERE report_date = %s;", (datetime.utcnow().date(),))
+                cursor.execute("DELETE FROM daily_reports WHERE report_date = %s;", (datetime.now(timezone.utc).date(),))
             conn.commit()
         print("Cleanup complete.")
     except Exception as e:
@@ -66,7 +66,7 @@ def run_verification():
         print("\n[VERIFICATION 1] Checking database for new records...")
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
-                cursor.execute("SELECT id FROM daily_reports WHERE report_date = %s;", (datetime.utcnow().date(),))
+                cursor.execute("SELECT id FROM daily_reports WHERE report_date = %s;", (datetime.now(timezone.utc).date(),))
                 report_row = cursor.fetchone()
                 if report_row:
                     report_id = report_row[0]
@@ -77,7 +77,7 @@ def run_verification():
                     print("FAILURE: No report record was created in the database.")
 
         # 3b. Verify JSON File Creation
-        output_file = os.path.join("output", f"report_{datetime.utcnow().date()}.json")
+        output_file = os.path.join("output", f"report_{datetime.now(timezone.utc).date()}.json")
         print(f"\n[VERIFICATION 2] Checking for output file at: {output_file}")
         if os.path.exists(output_file):
             print(f"SUCCESS: Output JSON file was created.")
@@ -93,7 +93,7 @@ def run_verification():
         print("\n--- Final Cleanup ---")
         cleanup_test_data()
         # Also remove the generated file
-        # output_file = os.path.join("output", f"report_{datetime.utcnow().date()}.json")
+        # output_file = os.path.join("output", f"report_{datetime.now(timezone.utc).date()}.json")
         # if os.path.exists(output_file):
         #     os.remove(output_file)
         #     print(f"Removed test file: {output_file}")
