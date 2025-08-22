@@ -2,8 +2,8 @@
 Stockometry API - FastAPI integration layer
 """
 
-from .routes import create_router
+from .routes import router
 
 __all__ = [
-    "create_router"
+    "router"
 ]

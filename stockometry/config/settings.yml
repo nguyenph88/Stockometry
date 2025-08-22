@@ -1,0 +1,22 @@
+database:
+  host: localhost
+  port: 5432
+  name: stockometry
+  user: postgres
+  password: postgres
+
+apis:
+  news_api_key: your_news_api_key_here
+
+scheduler:
+  timezone: UTC
+  news_interval_hours: 1
+  market_data_hour: 1
+  nlp_interval_minutes: 15
+  final_report_hour: 2
+  final_report_minute: 30
+
+nlp:
+  spacy_model: en_core_web_sm
+  finbert_model: ProsusAI/finbert
+  confidence_threshold: 0.3

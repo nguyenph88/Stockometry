@@ -20,10 +20,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def run_once():
+def run_analysis_and_save():
     """
-    Runs the complete Stockometry pipeline once.
-    This is the standalone equivalent of the original run_once.py
+    Runs the complete Stockometry pipeline once and saves results.
+    This is the main function for CLI usage.
     """
     logger.info("Starting Stockometry Production Run (Independent Mode)")
     
@@ -43,6 +43,13 @@ def run_once():
         raise
     
     return False
+
+def run_once():
+    """
+    Runs the complete Stockometry pipeline once.
+    This is the standalone equivalent of the original run_once.py
+    """
+    return run_analysis_and_save()
 
 if __name__ == '__main__':
     try:

@@ -7,7 +7,7 @@ This script allows you to export reports from the database to JSON format on dem
 import sys
 import os
 from datetime import datetime, timedelta
-from src.output.processor import OutputProcessor
+from stockometry.core.output.processor import OutputProcessor
 
 def export_latest_report():
     """Export the most recent report to JSON"""
@@ -94,7 +94,7 @@ def list_available_reports():
     print("-" * 50)
     
     try:
-        from src.database import get_db_connection
+        from stockometry.database import get_db_connection
         
         with get_db_connection() as conn:
             cursor = conn.cursor()
@@ -128,11 +128,11 @@ def main():
         print("Stockometry Report Export Utility")
         print("=" * 40)
         print("Usage:")
-        print("  python export_reports.py latest                    # Export latest report")
-        print("  python export_reports.py date YYYY-MM-DD          # Export report by date")
-        print("  python export_reports.py id <report_id>           # Export report by ID")
-        print("  python export_reports.py list                     # List available reports")
-        print("  python export_reports.py help                     # Show this help")
+        print("  python -m stockometry.utils.export_reports latest                    # Export latest report")
+        print("  python -m stockometry.utils.export_reports date YYYY-MM-DD          # Export report by date")
+        print("  python -m stockometry.utils.export_reports id <report_id>           # Export report by ID")
+        print("  python -m stockometry.utils.export_reports list                     # List available reports")
+        print("  python -m stockometry.utils.export_reports help                     # Show this help")
         return
     
     command = sys.argv[1].lower()
@@ -153,14 +153,15 @@ def main():
         print("Stockometry Report Export Utility")
         print("=" * 40)
         print("Usage:")
-        print("  python export_reports.py latest                    # Export latest report")
-        print("  python export_reports.py date YYYY-MM-DD          # Export report by date")
-        print("  python export_reports.py id <report_id>           # Export report by ID")
-        print("  python export_reports.py list                     # List available reports")
-        print("  python export_reports.py help                     # Show this help")
+        print("  python -m stockometry.utils.export_reports latest                    # Export latest report")
+        print("  python -m stockometry.utils.export_reports date YYYY-MM-DD          # Export report by date")
+        print("  python -m stockometry.utils.export_reports id <report_id>           # Export report by ID")
+        print("  python -m stockometry.utils.export_reports list                     # List available reports")
+        print("  python -m stockometry.utils.export_reports help                     # Show this help")
     
     else:
-        print("Invalid command. Use 'python export_reports.py help' for usage information.")
+        print("Invalid command. Use 'python -m stockometry.utils.export_reports help' for usage information.")
 
 if __name__ == "__main__":
     main()
+

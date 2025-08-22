@@ -1,16 +1,11 @@
-#!/usr/bin/env python3
-"""
-Stockometry CLI - Scheduler
-Standalone script to run the Stockometry scheduler.
-Equivalent to the original scheduler.py but using the new modular structure.
-"""
-
 from apscheduler.schedulers.blocking import BlockingScheduler
-from ..database import init_db
-from ..core.collectors.news_collector import fetch_and_store_news
-from ..core.collectors.market_data_collector import fetch_and_store_market_data
-from ..core.nlp.processor import process_articles_and_store_features
-from ..core import run_stockometry_analysis
+from stockometry.database import init_db
+from stockometry.core.collectors.news_collector import fetch_and_store_news
+from stockometry.core.collectors.market_data_collector import fetch_and_store_market_data
+from stockometry.core.nlp.processor import process_articles_and_store_features
+from stockometry.core.analysis.synthesizer import synthesize_analyses
+# Import the new OutputProcessor
+from stockometry.core.output.processor import OutputProcessor
 
 def run_synthesis_and_save():
     """
@@ -18,18 +13,30 @@ def run_synthesis_and_save():
     processes the output for saving. This is the main job for the scheduler.
     """
     # Step 1: Generate the report object. The synthesizer will print it to the console.
-    report_object = run_stockometry_analysis(run_source="SCHEDULED")
+    report_object = synthesize_analyses()
     
+    # Step 2: If a report was successfully generated, process and save it.
     if report_object:
-        print("Scheduled report completed successfully")
+        # Mark this as a SCHEDULED run
+        processor = OutputProcessor(report_object, run_source="SCHEDULED")
+        report_id = processor.process_and_save()
+        
+        if report_id:
+            print("Scheduled report saved to database successfully")
+            print("Report ID:", report_id)
+            
+            # Optional: Export to JSON if needed
+            json_data = processor.export_to_json(report_id=report_id)
+            if json_data:
+                print("JSON export available on demand")
+            else:
+                print("JSON export failed")
+        else:
+            print("Failed to save scheduled report to database")
     else:
-        print("Scheduled report failed")
+        print("Synthesizer did not return a report. Skipping output processing.")
 
 def main():
-    """Main function to start the scheduler - matches CLI __init__.py expectation"""
-    return start_scheduler()
-
-def start_scheduler():
     """Initializes the DB and starts the scheduled jobs."""
     init_db()
 
@@ -57,4 +64,4 @@ def start_scheduler():
         print("Scheduler shut down.")
 
 if __name__ == '__main__':
-    start_scheduler()
+    main()
