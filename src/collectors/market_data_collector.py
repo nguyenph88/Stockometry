@@ -1,4 +1,5 @@
 import yfinance as yf
+import numpy as np
 from src.config import settings
 from src.database import get_db_connection
 
@@ -35,14 +36,21 @@ def fetch_and_store_market_data():
                     ticker_data = ticker_data.dropna(how='all')
 
                     for index, row in ticker_data.iterrows():
+                        # Convert numpy types to Python types to avoid PostgreSQL schema issues
+                        open_val = float(row['Open']) if not np.isnan(row['Open']) else None
+                        high_val = float(row['High']) if not np.isnan(row['High']) else None
+                        low_val = float(row['Low']) if not np.isnan(row['Low']) else None
+                        close_val = float(row['Close']) if not np.isnan(row['Close']) else None
+                        volume_val = int(row['Volume']) if not np.isnan(row['Volume']) else None
+                        
                         cursor.execute(insert_query, (
                             ticker,
                             index.date(),
-                            row['Open'],
-                            row['High'],
-                            row['Low'],
-                            row['Close'],
-                            int(row['Volume'])
+                            open_val,
+                            high_val,
+                            low_val,
+                            close_val,
+                            volume_val
                         ))
                         count += cursor.rowcount
             conn.commit()
