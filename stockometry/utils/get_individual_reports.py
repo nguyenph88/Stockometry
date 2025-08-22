@@ -10,8 +10,11 @@ def fetch_independent_analyses():
     """
     Runs the two analysis modules independently and prints their structured output.
     """
+    from stockometry.config import settings
     print("--- Initializing Database ---")
-    init_db()
+    print(f"Environment: {settings.environment}")
+    print(f"Using database: {settings.db_name_active}")
+    init_db()  # Will automatically use the correct database based on environment
 
     print("\n" + "="*50)
     print("Fetching: 1. Historical Trend (Last 6 Days)")

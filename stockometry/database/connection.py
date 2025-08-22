@@ -1,12 +1,16 @@
 import psycopg2
 from psycopg2 import sql
 from contextlib import contextmanager
-from ..config import settings
 
 def get_db_connection_string(dbname=None):
     """Constructs a connection string."""
-    db = dbname or settings.db_name
-    return f"dbname='{db}' user='{settings.db_user}' host='{settings.db_host}' password='{settings.db_password}' port='{settings.db_port}'"
+    # Import settings at the top of the function
+    from ..config import settings
+    
+    if dbname is None:
+        # Use environment-based database selection
+        dbname = settings.db_name_active
+    return f"dbname='{dbname}' user='{settings.db_user}' host='{settings.db_host}' password='{settings.db_password}' port='{settings.db_port}'"
 
 @contextmanager
 def get_db_connection(dbname=None):
@@ -26,8 +30,15 @@ def get_db_connection(dbname=None):
 
 def init_db(dbname=None):
     """Initializes the database and creates tables if they don't exist."""
-    target_db = dbname or settings.db_name
-    print(f"Initializing database '{target_db}'...")
+    # Import settings at the top of the function
+    from ..config import settings
+    
+    if dbname is None:
+        # Use environment-based database selection
+        dbname = settings.db_name_active
+    
+    target_db = dbname
+    print(f"Initializing database '{target_db}' (Environment: {settings.environment})...")
     try:
         # Connect to the default 'postgres' database to check if our target DB exists
         with get_db_connection(dbname='postgres') as conn:

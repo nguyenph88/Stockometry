@@ -25,14 +25,16 @@ def run_stockometry_analysis(run_source: str = "ONDEMAND"):
     Returns:
         bool: True if successful, False otherwise
     """
-    logger.info(f"Starting Stockometry Analysis (Source: {run_source})")
+    from ..config import settings
+    logger.info(f"Starting Stockometry Analysis (Source: {run_source}, Environment: {settings.environment})")
+    logger.info(f"Using database: {settings.db_name_active}")
     start_time = time.time()
     
     try:
         # Step 1: Initialize database
         logger.info("[STEP 1/5] Initializing database...")
-        init_db()
-        logger.info("Database initialized successfully")
+        init_db()  # Will automatically use the correct database based on environment
+        logger.info(f"Database '{settings.db_name_active}' initialized successfully")
         
         # Step 2: Fetch fresh news from NewsAPI
         logger.info("[STEP 2/5] Fetching fresh news from NewsAPI...")

@@ -66,6 +66,14 @@ class Settings:
     def db_name_staging(self) -> str:
         return self._config.get("database", {}).get("name_staging", "stockometry_staging")
     
+    @property
+    def db_name_active(self) -> str:
+        """Returns the active database name based on environment setting."""
+        if self.environment == "staging":
+            return self.db_name_staging
+        else:
+            return self.db_name
+    
     # --- Market Data Configuration ---
     @property
     def market_data(self) -> Dict[str, Any]:

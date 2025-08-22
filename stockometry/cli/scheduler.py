@@ -32,7 +32,12 @@ def main():
 
 def start_scheduler():
     """Initializes the DB and starts the scheduled jobs."""
-    init_db()
+    # Initialize database using environment-based selection
+    from ..config import settings
+    print(f"Starting scheduler in {settings.environment} environment...")
+    print(f"Using database: {settings.db_name_active}")
+    
+    init_db()  # Will automatically use the correct database based on environment
 
     scheduler = BlockingScheduler(timezone=settings.scheduler_timezone)
 

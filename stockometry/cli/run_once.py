@@ -25,7 +25,9 @@ def run_analysis_and_save():
     Runs the complete Stockometry pipeline once and saves results.
     This is the main function for CLI usage.
     """
-    logger.info("Starting Stockometry Production Run (Independent Mode)")
+    from ..config import settings
+    logger.info(f"Starting Stockometry Production Run (Environment: {settings.environment})")
+    logger.info(f"Using database: {settings.db_name_active}")
     
     try:
         success = run_stockometry_analysis(run_source="ONDEMAND")
