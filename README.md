@@ -7,6 +7,8 @@ Stockometry is a **two-stage financial analysis system** that combines historica
 1. **Historical Trend Analysis** (Last 6 days): Identifies sectors with consistent positive/negative sentiment trends
 2. **Today's Impact Analysis**: Evaluates today's high-impact news events and their sector implications
 
+The final, high-confidence prediction comes when these two things align. For example, if the Technology sector has a positive historical trend and there's a positive impact event today, the bot flags it as a strong signal and then drills down to find the specific stocks mentioned in today's news.
+
 ## Key Features
 - **11-Sector Coverage**: Technology, Healthcare, Financial Services, Consumer Discretionary, Consumer Staples, Energy, Industrials, Materials, Real Estate, Communication Services, Utilities
 - **NLP-Powered Analysis**: Uses spaCy for entity extraction and FinBERT for financial sentiment analysis
@@ -14,21 +16,6 @@ Stockometry is a **two-stage financial analysis system** that combines historica
 - **Modular Architecture**: Plug-and-play package structure for FastAPI integration
 - **Standalone Operation**: Can run independently or as part of larger systems
 - **Scheduled Analysis**: Automated daily analysis with configurable timing
-- **Comprehensive Testing**: Full E2E test suite with shared test utilities
-
-## Modular Structure
-```
-stockometry/
-├── core/           # Core business logic and analysis
-├── cli/            # Command-line interfaces
-├── api/            # FastAPI integration
-├── config/         # Configuration management
-├── database/       # Database connection and management
-├── scheduler/      # Scheduled analysis functionality
-├── utils/          # Utility functions and tools
-├── tests/          # Test suite and utilities
-└── docs/           # Documentation files
-```
 
 ## Quick Start
 
@@ -44,9 +31,9 @@ pip install -r requirements.txt
 # Install spaCy model
 python -m spacy download en_core_web_sm
 
-# Set up environment variables
-cp stockometry/config/.env.example stockometry/config/.env
-# Edit .env with your database and API credentials
+# Set up configuration
+cp stockometry/config/settings.yml.template stockometry/config/settings.yml
+# Edit settings.yml with your database and API credentials
 ```
 
 ### Database Setup
@@ -77,22 +64,6 @@ from stockometry.cli.run_once import run_analysis_and_save
 success = run_analysis_and_save()
 ```
 
-### Scheduled Operation
-```python
-from stockometry.scheduler.scheduler import main
-
-# Start scheduled analysis
-main()
-```
-
-### Export Reports
-```python
-from stockometry.utils.export_reports import export_latest_report
-
-# Export latest analysis to JSON
-export_latest_report()
-```
-
 ### FastAPI Integration
 ```python
 from fastapi import FastAPI
@@ -104,28 +75,18 @@ app.include_router(router, prefix="/api/v1")
 
 ## Configuration
 
-### Environment Variables
-```bash
-# Database
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=stockometry
-DB_USER=your_username
-DB_PASSWORD=your_password
-
-# API Keys
-NEWS_API_KEY=your_news_api_key
-```
-
 ### Settings File
 ```yaml
 # stockometry/config/settings.yml
+environment: production
 database:
   host: localhost
   port: 5432
   name: stockometry
   user: your_username
   password: your_password
+
+news_api_key: your_news_api_key
 
 scheduler:
   timezone: UTC
@@ -141,26 +102,11 @@ scheduler:
 python -m stockometry.tests.run_all_e2e_tests
 ```
 
-### Individual Test Scenarios
-```bash
-# Bullish Technology signals
-python -m stockometry.tests.test_e2e_bullish_tech
-
-# Bearish Financial signals
-python -m stockometry.tests.test_e2e_bearish_financial
-
-# Mixed market signals
-python -m stockometry.tests.test_e2e_mixed_signals
-
-# Edge cases and error handling
-python -m stockometry.tests.test_e2e_edge_cases
-```
-
 ## Documentation
 - **[EXAMPLE.md](stockometry/docs/EXAMPLE.md)**: JSON output structure and signal interpretation
-- **[README_RUNE_ONCE.md](stockometry/docs/README_RUNE_ONCE.md)**: Standalone execution guide
 - **[FAQs.md](stockometry/docs/FAQs.md)**: Frequently asked questions
-- **[WHAT_THIS_TOOL_DOES.md](stockometry/docs/WHAT_THIS_TOOL_DOES.md)**: Core functionality explanation
+- **[API_ENDPOINTS.md](stockometry/docs/API_ENDPOINTS.md)**: Complete API reference
+- **[FASTAPI_INTEGRATION.md](stockometry/docs/FASTAPI_INTEGRATION.md)**: Integration guide
 
 ## Architecture
 
@@ -185,19 +131,5 @@ python -m stockometry.tests.test_e2e_edge_cases
 - **Scheduling**: APScheduler
 - **API**: FastAPI (optional)
 
-## Contributing
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Ensure all tests pass
-6. Submit a pull request
-
 ## License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-- **Issues**: Report bugs and request features
-- **Documentation**: Comprehensive guides and examples
-- **Testing**: Full test suite for validation
-- **Examples**: Working code samples and use cases
