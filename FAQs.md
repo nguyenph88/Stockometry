@@ -82,10 +82,6 @@ Think of the bot's logic as needing two key pieces of evidence to align before i
 
 A high-confidence signal is only generated when both of these conditions are met.
 
-#### 🎯 **Why 6 Days?**
-
-This period is long enough to filter out the daily noise. If a sector shows consistently positive sentiment for 5-6 consecutive days (roughly a full trading week), it's a much stronger indication that a real, underlying trend is forming. It's a more **robust and reliable signal**.
-
 #### ⏰ **Scenarios With No Signal**
 
 The bot will correctly remain silent in several common scenarios:
