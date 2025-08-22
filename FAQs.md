@@ -28,5 +28,17 @@ Economic Significance: These companies are so large that major news about them c
 
 In short, this initial list acts as a high-signal, manageable starting point to build and validate your bot's core logic before you scale up.
 
+# is it a good idea for historical trends to span our last 6 days but not 3, 4 days?
 
+That's an excellent question. It gets to the core of the strategy behind the trend analysis. Using a 6-day window is a deliberate choice to balance responsiveness with reliability.
+
+Here's the thinking behind it:
+
+Why not 3-4 days? A shorter window is highly responsive but can be easily misled by short-term "noise." For example, a single positive news story could create a 2-day positive trend that isn't significant and quickly fades. A shorter window is more likely to give you false signals.
+
+Why 6 days? This period is long enough to filter out the daily noise. If a sector shows consistently positive sentiment for 5-6 consecutive days (roughly a full trading week), it's a much stronger indication that a real, underlying trend is forming. It's a more robust and reliable signal.
+
+Why not longer (e.g., 30 days)? A much longer window would be too slow. It would become a lagging indicator, only confirming a trend long after the opportunity has passed.
+
+Ultimately, 6 days is a strategic sweet spot. It's designed to be long enough to ensure the trend is real but short enough to still be a useful, predictive signal.
 
