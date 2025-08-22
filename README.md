@@ -1,58 +1,106 @@
-# Stock Analysis Bot - Milestone 1: Data Collector & Warehouse
+# Stockometry - AI-Powered Market Analysis Bot
 
-This project is the first milestone in building a news-driven stock analysis bot. Its purpose is to reliably collect and store financial news and market data in a PostgreSQL database.
+**Version 3.0** - News-driven stock sector analysis with historical trend validation
 
-## Features
+## 🎯 Tl;dr - What This Tool Does 
 
-- **Automated Data Collection**: Fetches data from NewsAPI and Yahoo Finance using a scheduler.
-- **Robust Database Setup**: Automatically creates the database and required tables on first run.
-- **Configuration Driven**: All API keys, database credentials, and settings are managed via external `.env` and `settings.yml` files.
-- **Modern Structure**: Follows best practices for project layout, separating concerns for configuration, data collection, and database management.
-- **Idempotent Inserts**: Safely handles duplicate data by ignoring entries that already exist in the database.
+Stockometry uses a **two-stage analysis approach** to generate high-confidence market signals:
 
-## Setup
+## 🎯 You want a longer version?
+
+That's precisely the two-stage logic the bot uses to generate its most powerful signals.
+
+To break it down:
+
+Historical Trend (Last 6 Days): The bot first looks at the news from the past week to establish an underlying trend or "market mood" for each sector. It's asking, "Has the news for the Technology sector been consistently positive lately?"
+
+Today's Impact (Today's News): It then analyzes only today's news for a specific, high-impact catalyst—like a new regulation, a major deal, or a subsidy announcement. It asks, "Did something significant happen today that could move a sector?"
+
+The final, high-confidence prediction comes when these two things align. For example, if the Technology sector has a positive historical trend and there's a positive impact event today, the bot flags it as a strong signal and then drills down to find the specific stocks mentioned in today's news.
+
+### 📊 **Stage 1: Historical Trend Analysis (Last 6 Days)**
+- Analyzes news sentiment over the past week to establish underlying "market mood" for each sector
+- Identifies sectors with consistent positive or negative sentiment trends
+- **Question**: "Has the news for the Technology sector been consistently positive lately?"
+
+### ⚡ **Stage 2: Today's Impact Analysis**
+- Scans today's news for high-impact catalysts (regulations, deals, subsidies, announcements)
+- Looks for specific events that could move sectors in the short term
+- **Question**: "Did something significant happen today that could move a sector?"
+
+### 🎯 **High-Confidence Signals**
+When both stages align (e.g., positive historical trend + positive impact event today), the system generates:
+- **Strong buy/sell signals** for specific sectors
+- **Individual stock predictions** within those sectors
+- **Complete audit trail** with source articles and sentiment scores
+
+## 🚀 Key Features
+
+- **11 Market Sectors** - Complete market coverage (Technology, Healthcare, Financial Services, etc.)
+- **Real-time Data** - NewsAPI + yfinance integration
+- **Advanced NLP** - FinBERT financial sentiment analysis
+- **Run Source Tracking** - Distinguish ONDEMAND vs SCHEDULED runs
+- **Comprehensive Output** - JSON reports + PostgreSQL database storage
+
+## 📚 Documentation
+
+- **[EXAMPLE.md](EXAMPLE.md)** - Complete JSON output structure and examples
+- **[README_RUNE_ONCE.md](README_RUNE_ONCE.md)** - Independent runner script documentation
+- **[FAQs.md](FAQs.md)** - Frequently asked questions and troubleshooting
+- **[WHAT_THIS_TOOL_DOES.md](WHAT_THIS_TOOL_DOES.md)** - Core concept explanation
+
+## 🛠️ Quick Start
 
 ### Prerequisites
-
 - Python 3.9+
-- PostgreSQL server running locally or accessible.
+- PostgreSQL server
+- NewsAPI key
 
 ### Installation
+```bash
+git clone <repository>
+cd Stockometry
+python -m venv venv
+venv\Scripts\activate  # Windows
+pip install -r requirements.txt
+```
 
-1.  **Clone the repository:**
-    ```bash
-    git clone <your-repo-url>
-    cd stock_analysis_bot
-    ```
+### Configuration
+1. Copy `.env.example` to `.env` and fill in your credentials
+2. Update `settings.yml` with your preferences
 
-2.  **Create a virtual environment:**
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-    ```
+### Run Options
 
-3.  **Install dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
+#### 🚀 **Independent Run (Recommended for testing)**
+```bash
+python src/rune_once.py
+```
 
-4.  **Configure the environment:**
-    -   Create a `.env` file. You can copy the structure from the example below.
-    -   Fill in your `NEWS_API_KEY` and your PostgreSQL connection details.
-    -   Review `settings.yml` to adjust tickers or news queries if desired.
+#### ⏰ **Scheduled Run (Production)**
+```bash
+python src/scheduler.py
+```
 
-## How to Run
+## 📊 Output
 
-1.  **Initialize the Database (Optional - the scheduler does this automatically):**
-    You can run the database script directly to create the database and tables manually if needed.
-    ```bash
-    python src/database.py
-    ```
+- **JSON Reports**: `output/report_YYYY-MM-DD_HHMMSS_ondemand.json`
+- **Database**: PostgreSQL with complete signal history
+- **Logs**: Detailed execution logs for debugging
 
-2.  **Run the Scheduler:**
-    This is the main entry point for the application. It will initialize the database if needed, run the collection jobs immediately, and then continue running them on schedule.
-    ```bash
-    python src/scheduler.py
-    ```
+## 🔍 Example Signal
 
-    The scheduler will run in the foreground. You can stop it with `Ctrl+C`.
+**High-Confidence Bullish Technology:**
+- **Historical**: 3+ days of positive sentiment
+- **Today's Impact**: "Microsoft Announces Groundbreaking AI Deal"
+- **Prediction**: Strong buy signal for Technology sector
+- **Stocks**: MSFT, NVDA with specific reasons and scores
+
+---
+
+**Built for traders, analysts, and anyone who wants data-driven market insights backed by news sentiment analysis.**
+
+## Disclaimer
+
+This tool is for analytical and educational purposes only. It is **not financial advice**. The signals generated by this bot are based on algorithmic analysis and do not guarantee any specific outcome. Always conduct your own research and consult with a qualified financial advisor before making any investment decisions.
+
+Disclaimer
