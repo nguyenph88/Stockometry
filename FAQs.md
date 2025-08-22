@@ -64,6 +64,42 @@ Ultimately, **6 days is a strategic sweet spot**. It's designed to be:
 
 ---
 
+## 📈 A patine analyst, not a hyperactive trader
+
+### Q: With the algorithm, some days it does not have any signal in the report. Is it a bug? I thought its supposed to give some signal everyday.
+
+**A:** Yes, that is absolutely correct and is the intended design of the algorithm. It's a feature, not a bug. The bot is designed to act like a patient analyst, not a hyperactive trader. Its primary goal is to identify high-confidence opportunities, and those don't happen every single day.
+
+Here's the thinking behind it:
+
+#### ⚡ **The "Confluence" Requirement**
+
+Think of the bot's logic as needing two key pieces of evidence to align before it raises an alert:
+
+1. A Historical Trend (The "Why"): Is there a consistent, multi-day sentiment for a sector? This establishes the underlying market mood.
+
+2. A Daily Catalyst (The "Now"): Did a specific, high-impact news event happen today that reinforces that trend?
+
+A high-confidence signal is only generated when both of these conditions are met.
+
+#### 🎯 **Why 6 Days?**
+
+This period is long enough to filter out the daily noise. If a sector shows consistently positive sentiment for 5-6 consecutive days (roughly a full trading week), it's a much stronger indication that a real, underlying trend is forming. It's a more **robust and reliable signal**.
+
+#### ⏰ **Scenarios With No Signal**
+
+The bot will correctly remain silent in several common scenarios:
+
+1. Trend Without a Catalyst: The Technology sector might have a positive trend, but if today's news is neutral and boring, there's no immediate reason to act. The bot waits.
+
+2. Catalyst Without a Trend: A big, positive news event might happen for the Energy sector, but if there's no underlying positive trend, the bot sees it as an isolated event, not a high-confidence signal.
+
+3. Conflicting Information: The Technology sector has a positive trend, but a negative high-impact event (like a new regulation) happens today. The bot recognizes this as uncertainty and correctly produces no signal.
+
+This selective approach is what makes the bot's signals valuable. When it does issue a report, it's because multiple, independent conditions have aligned, making the prediction much more reliable than a system that forces an opinion every day.
+
+---
+
 ## 🔗 **Related Documentation**
 
 - **[README.md](README.md)** - Project overview and quick start
