@@ -3,7 +3,7 @@ import os
 import json
 import unittest
 from unittest.mock import patch
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 # Import the core functions and classes we need to test
 from src.database import get_db_connection, init_db
@@ -12,7 +12,7 @@ from src.output.processor import OutputProcessor
 
 # --- Dummy Data Definition ---
 # This data is crafted to produce a predictable outcome for our test.
-TODAY = datetime.utcnow()
+TODAY = datetime.now(timezone.utc)
 DUMMY_ARTICLES = [
     # 1. Historical Positive Trend for 'Technology' (3 articles) - THIS IS THE TARGET SIGNAL
     {"url": f"https://e2e.test/hist_tech_{i}", "published_at": TODAY - timedelta(days=i), "title": f"Old Tech News Day {i}",
