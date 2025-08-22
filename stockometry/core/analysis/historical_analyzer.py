@@ -201,7 +201,7 @@ def analyze_historical_trends():
                     summary_points.append(f"A consistent {direction.lower()} trend was observed for the '{sector}' sector.")
 
         if not summary_points:
-            summary_points.append("No significant multi-day trends identified.")
+            summary_points.append(f"Analyzed {len(data)} articles from the last 6 days, but no significant multi-day trends were identified. This may indicate neutral sentiment or insufficient data for trend detection.")
 
         return {"signals": signals, "summary_points": summary_points}
 

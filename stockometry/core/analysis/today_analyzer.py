@@ -21,8 +21,10 @@ def analyze_todays_impact():
             todays_articles = cursor.fetchall()
 
         if not todays_articles:
-            return {"signals": [], "summary_points": ["No new articles available for today's impact analysis."]}
+            return {"signals": [], "summary_points": ["No articles found for today's date."]}
 
+        print(f"Found {len(todays_articles)} articles for today's analysis")
+        
         signals = []
         summary_points = []
         for title, description, features, url in todays_articles:
@@ -47,7 +49,7 @@ def analyze_todays_impact():
                         break # Process first sector found in an article
 
         if not summary_points:
-            summary_points.append("No high-impact news events identified for any tracked sectors today.")
+            summary_points.append(f"Analyzed {len(todays_articles)} articles today, but no high-impact signals were generated. Articles may not contain impact keywords or extreme sentiment scores above the {EXTREME_SENTIMENT_THRESHOLD} threshold.")
 
         return {"signals": signals, "summary_points": summary_points}
 
