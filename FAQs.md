@@ -64,7 +64,7 @@ Ultimately, **6 days is a strategic sweet spot**. It's designed to be:
 
 ---
 
-## 📈 A patine analyst, not a hyperactive trader
+## 📈 A patient analyst, not a hyperactive trader
 
 ### Q: With the algorithm, some days it does not have any signal in the report. Is it a bug? I thought its supposed to give some signal everyday.
 
