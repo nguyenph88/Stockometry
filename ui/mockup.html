@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Analysis Bot - Daily Briefing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- Header -->
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-slate-900">Daily Briefing</h1>
+            <p class="text-slate-500 text-lg">Analysis for Thursday, August 21, 2025</p>
+        </header>
+
+        <!-- Section 1: Executive Summary -->
+        <section id="summary" class="mb-10">
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+                <h2 class="text-xl font-semibold mb-3 text-slate-900">Executive Summary</h2>
+                <p class="text-slate-600">A high-confidence bullish signal was identified for the **Technology** sector, driven by a consistent positive historical trend and a high-impact positive news event today concerning Microsoft's new AI chip. A bearish historical trend was noted for the **Energy** sector, but no immediate catalyst was found. Within the Technology sector, **MSFT** is predicted to be a top mover based on highly positive, company-specific news.</p>
+            </div>
+        </section>
+
+        <!-- Section 2: High-Confidence Signals -->
+        <section id="signals" class="mb-10">
+            <h2 class="text-2xl font-bold mb-4 text-slate-900">High-Confidence Signals</h2>
+            <div class="space-y-6">
+
+                <!-- Bullish Signal Card (Expanded by default) -->
+                <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="text-sm font-semibold text-green-600 bg-green-100 px-3 py-1 rounded-full">BULLISH SIGNAL</span>
+                                <h3 class="text-2xl font-bold mt-2 text-slate-900">Technology Sector</h3>
+                            </div>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="mt-4">
+                            <h4 class="font-semibold text-slate-600">Predicted Top Stock Movers:</h4>
+                            <ul class="list-disc list-inside mt-2 text-slate-700">
+                                <li><span class="font-bold">MSFT:</span> Strong positive news: 'Microsoft Unveils New AI Chip in Major Deal' (Score: 0.98)</li>
+                                <li><span class="font-bold">AAPL:</span> General positive sector sentiment.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- Evidence Section -->
+                    <div class="bg-slate-50 p-6 border-t border-slate-200">
+                        <h4 class="font-semibold text-slate-700 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2h8a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h4a1 1 0 100-2H7zm0 4a1 1 0 100 2h4a1 1 0 100-2H7z" clip-rule="evenodd" />
+                            </svg>
+                            Evidence
+                        </h4>
+                        <div class="mt-3 space-y-2 text-sm">
+                            <p class="text-slate-600"><span class="font-bold text-slate-700">[Historical Trend]</span> Consistent positive sentiment over the last 3 days.</p>
+                            <p class="text-slate-600"><span class="font-bold text-slate-700">[Impact Event]</span> High-impact positive news today.</p>
+                            <h5 class="font-semibold pt-2 text-slate-700">Source Articles:</h5>
+                            <ul class="list-disc list-inside text-slate-600">
+                                <li><a href="#" class="text-blue-600 hover:underline">Microsoft Unveils New AI Chip in Major Deal</a></li>
+                                <li><a href="#" class="text-blue-600 hover:underline">Apple Reports Strong iPhone Sales in Europe</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bearish Signal Card (Collapsed by default) -->
+                <div class="bg-white rounded-lg shadow-sm border border-slate-200">
+                     <div class="p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="text-sm font-semibold text-red-600 bg-red-100 px-3 py-1 rounded-full">BEARISH SIGNAL</span>
+                                <h3 class="text-2xl font-bold mt-2 text-slate-900">Energy Sector</h3>
+                            </div>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.707-10.293a1 1 0 00-1.414-1.414l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414l-3-3z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <p class="mt-4 text-slate-600">A consistent negative historical trend was detected, but no significant impact event occurred today to confirm a high-confidence signal.</p>
+                        <button class="mt-4 text-sm font-semibold text-blue-600 hover:text-blue-800 flex items-center">
+                            Show Evidence
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                              <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+        
+        <!-- Section 3: Market Pulse -->
+        <section id="pulse" class="mb-10">
+            <h2 class="text-2xl font-bold mb-4 text-slate-900">Market Pulse</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Historical Trends Column -->
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+                    <h3 class="text-lg font-semibold mb-3 text-slate-900">Historical Trends (Last 6 Days)</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start"><span class="text-green-500 mr-2">📈</span> <div><span class="font-semibold">Bullish Trend</span> detected in <span class="font-bold">Technology Sector</span>.</div></li>
+                        <li class="flex items-start"><span class="text-red-500 mr-2">📉</span> <div><span class="font-semibold">Bearish Trend</span> detected in <span class="font-bold">Energy Sector</span>.</div></li>
+                        <li class="flex items-start"><span class="text-slate-400 mr-2">➖</span> <div><span class="font-semibold">Neutral Trend</span> detected in <span class="font-bold">Financial Sector</span>.</div></li>
+                    </ul>
+                </div>
+                <!-- Today's Impact Events Column -->
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+                    <h3 class="text-lg font-semibold mb-3 text-slate-900">Today's Impact Events</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start"><span class="text-green-500 mr-2">⚡️</span> <div><span class="font-semibold">Impact UP</span> event detected in <span class="font-bold">Technology Sector</span> due to news: "Microsoft Unveils New AI Chip..."</div></li>
+                        <li class="flex items-start"><span class="text-red-500 mr-2">⚡️</span> <div><span class="font-semibold">Impact DOWN</span> event detected in <span class="font-bold">Healthcare Sector</span> due to news: "New Drug Trial Fails..."</div></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Raw News Feed -->
+        <section id="feed">
+            <h2 class="text-2xl font-bold mb-4 text-slate-900">Today's News Feed</h2>
+            <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                            <th class="p-4 font-semibold">Article Title</th>
+                            <th class="p-4 font-semibold">Sentiment</th>
+                            <th class="p-4 font-semibold">Identified Entities</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b border-slate-200">
+                            <td class="p-4 text-blue-600 font-medium hover:underline"><a href="#">Microsoft Unveils New AI Chip in Major Deal</a></td>
+                            <td class="p-4"><span class="font-semibold text-green-600">Positive (0.98)</span></td>
+                            <td class="p-4 text-slate-500">Microsoft, MSFT</td>
+                        </tr>
+                        <tr class="border-b border-slate-200">
+                            <td class="p-4 text-blue-600 font-medium hover:underline"><a href="#">New Drug Trial Fails for Major Pharma Co</a></td>
+                            <td class="p-4"><span class="font-semibold text-red-600">Negative (0.99)</span></td>
+                            <td class="p-4 text-slate-500">Pfizer</td>
+                        </tr>
+                        <tr class="border-b border-slate-200">
+                            <td class="p-4 text-blue-600 font-medium hover:underline"><a href="#">Federal Reserve Holds Interest Rates Steady</a></td>
+                            <td class="p-4"><span class="font-semibold text-slate-600">Neutral (0.91)</span></td>
+                            <td class="p-4 text-slate-500">Federal Reserve</td>
+                        </tr>
+                        <tr>
+                            <td class="p-4 text-blue-600 font-medium hover:underline"><a href="#">Walmart to Invest in Supply Chain Automation</a></td>
+                            <td class="p-4"><span class="font-semibold text-green-600">Positive (0.85)</span></td>
+                            <td class="p-4 text-slate-500">Walmart</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+</body>
+</html>
