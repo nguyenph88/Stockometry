@@ -2,7 +2,7 @@
 import pandas as pd
 from collections import defaultdict
 from src.database import get_db_connection
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 SECTOR_MAP = {
     'AAPL': 'Technology', 'Apple': 'Technology',
@@ -18,7 +18,7 @@ def analyze_historical_trends():
     now including the source articles that contributed to the trend.
     """
     print("Starting historical trend analysis...")
-    end_date = datetime.utcnow().date()
+    end_date = datetime.now(timezone.utc).date()
     start_date = end_date - timedelta(days=7)
     
     query = "SELECT published_at, nlp_features, title, url FROM articles WHERE nlp_features IS NOT NULL AND published_at::date >= %s AND published_at::date < %s;"

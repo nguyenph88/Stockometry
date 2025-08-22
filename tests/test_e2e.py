@@ -15,35 +15,35 @@ from src.output.processor import OutputProcessor
 TODAY = datetime.now(timezone.utc)
 DUMMY_ARTICLES = [
     # 1. Historical Positive Trend for 'Technology' (3 articles) - THIS IS THE TARGET SIGNAL
-    {"url": f"https://e2e.test/hist_tech_{i}", "published_at": TODAY - timedelta(days=i), "title": f"Old Tech News Day {i}",
+    {"url": f"https://e2e.test/hist_tech_{i}", "published_at": TODAY - timedelta(days=i), "title": f"Old Tech News Day {i}", "description": f"Technology sector shows positive momentum on day {i}",
      "nlp_features": {"sentiment": {"label": "positive", "score": 0.9}, "entities": [{"text": "Apple", "label": "ORG"}]}}
     for i in range(1, 4)
 ] + [
     # 2. Today's High-Impact Positive Event for 'Technology' and 'MSFT' (1 article)
-    {"url": "https://e2e.test/today_tech_signal", "published_at": TODAY, "title": "Microsoft Unveils New AI Chip in Major Deal",
+    {"url": "https://e2e.test/today_tech_signal", "published_at": TODAY, "title": "Microsoft Unveils New AI Chip in Major Deal", "description": "Microsoft announces groundbreaking AI chip deal that could revolutionize the industry",
      "nlp_features": {"sentiment": {"label": "positive", "score": 0.98}, "entities": [{"text": "Microsoft", "label": "ORG"}, {"text": "MSFT", "label": "ORG"}]}},
 
     # 3. HISTORICAL NOISE ARTICLES (NEW) - To test the filter
     # Day -2
-    {"url": "https://e2e.test/hist_noise_d2_1", "published_at": TODAY - timedelta(days=2), "title": "Oil Prices Fluctuate", "nlp_features": {"sentiment": {"label": "neutral", "score": 0.8}, "entities": [{"text": "ExxonMobil", "label": "ORG"}]}},
-    {"url": "https://e2e.test/hist_noise_d2_2", "published_at": TODAY - timedelta(days=2), "title": "Healthcare Stocks Dip", "nlp_features": {"sentiment": {"label": "negative", "score": 0.85}, "entities": [{"text": "Pfizer", "label": "ORG"}]}},
+    {"url": "https://e2e.test/hist_noise_d2_1", "published_at": TODAY - timedelta(days=2), "title": "Oil Prices Fluctuate", "description": "Oil prices show mixed movement in global markets", "nlp_features": {"sentiment": {"label": "neutral", "score": 0.8}, "entities": [{"text": "ExxonMobil", "label": "ORG"}]}},
+    {"url": "https://e2e.test/hist_noise_d2_2", "published_at": TODAY - timedelta(days=2), "title": "Healthcare Stocks Dip", "description": "Healthcare sector faces regulatory challenges", "nlp_features": {"sentiment": {"label": "negative", "score": 0.85}, "entities": [{"text": "Pfizer", "label": "ORG"}]}},
     # Day -3
-    {"url": "https://e2e.test/hist_noise_d3_1", "published_at": TODAY - timedelta(days=3), "title": "Retail Sales Numbers Miss Estimates", "nlp_features": {"sentiment": {"label": "negative", "score": 0.9}, "entities": [{"text": "Walmart", "label": "ORG"}]}},
+    {"url": "https://e2e.test/hist_noise_d3_1", "published_at": TODAY - timedelta(days=3), "title": "Retail Sales Numbers Miss Estimates", "description": "Retail sector underperforms market expectations", "nlp_features": {"sentiment": {"label": "negative", "score": 0.9}, "entities": [{"text": "Walmart", "label": "ORG"}]}},
     {"url": "https://e2e.test/hist_noise_d3_2", "published_at": TODAY - timedelta(days=3), "title": "Industrial Output Rises", "nlp_features": {"sentiment": {"label": "positive", "score": 0.88}, "entities": [{"text": "Boeing", "label": "ORG"}]}},
     # Day -4
-    {"url": "https://e2e.test/hist_noise_d4_1", "published_at": TODAY - timedelta(days=4), "title": "Bank Earnings Positive", "nlp_features": {"sentiment": {"label": "positive", "score": 0.91}, "entities": [{"text": "JPMorgan Chase", "label": "ORG"}]}},
-    {"url": "https://e2e.test/hist_noise_d4_2", "published_at": TODAY - timedelta(days=4), "title": "New Drug Trial Fails", "nlp_features": {"sentiment": {"label": "negative", "score": 0.99}, "entities": [{"text": "Moderna", "label": "ORG"}]}},
+    {"url": "https://e2e.test/hist_noise_d4_1", "published_at": TODAY - timedelta(days=4), "title": "Bank Earnings Positive", "description": "Banking sector reports strong quarterly results", "nlp_features": {"sentiment": {"label": "positive", "score": 0.91}, "entities": [{"text": "JPMorgan Chase", "label": "ORG"}]}},
+    {"url": "https://e2e.test/hist_noise_d4_2", "published_at": TODAY - timedelta(days=4), "title": "New Drug Trial Fails", "description": "Clinical trial results disappoint investors", "nlp_features": {"sentiment": {"label": "negative", "score": 0.99}, "entities": [{"text": "Moderna", "label": "ORG"}]}},
     # Day -5
-    {"url": "https://e2e.test/hist_noise_d5_1", "published_at": TODAY - timedelta(days=5), "title": "Consumer Confidence Report Stable", "nlp_features": {"sentiment": {"label": "neutral", "score": 0.9}, "entities": []}},
-    {"url": "https://e2e.test/hist_noise_d5_2", "published_at": TODAY - timedelta(days=5), "title": "Energy Sector Outlook Mixed", "nlp_features": {"sentiment": {"label": "neutral", "score": 0.7}, "entities": [{"text": "Chevron", "label": "ORG"}]}},
+    {"url": "https://e2e.test/hist_noise_d5_1", "published_at": TODAY - timedelta(days=5), "title": "Consumer Confidence Report Stable", "description": "Consumer sentiment remains unchanged", "nlp_features": {"sentiment": {"label": "neutral", "score": 0.9}, "entities": []}},
+    {"url": "https://e2e.test/hist_noise_d5_2", "published_at": TODAY - timedelta(days=5), "title": "Energy Sector Outlook Mixed", "description": "Energy sector faces uncertain future", "nlp_features": {"sentiment": {"label": "neutral", "score": 0.7}, "entities": [{"text": "Chevron", "label": "ORG"}]}},
     # Day -6
-    {"url": "https://e2e.test/hist_noise_d6_1", "published_at": TODAY - timedelta(days=6), "title": "Geopolitical Tensions Ease Slightly", "nlp_features": {"sentiment": {"label": "positive", "score": 0.75}, "entities": []}},
-    {"url": "https://e2e.test/hist_noise_d6_2", "published_at": TODAY - timedelta(days=6), "title": "Automaker Announces Recalls", "nlp_features": {"sentiment": {"label": "negative", "score": 0.92}, "entities": [{"text": "Ford", "label": "ORG"}]}},
+    {"url": "https://e2e.test/hist_noise_d6_1", "published_at": TODAY - timedelta(days=6), "title": "Geopolitical Tensions Ease Slightly", "description": "International relations show improvement", "nlp_features": {"sentiment": {"label": "positive", "score": 0.75}, "entities": []}},
+    {"url": "https://e2e.test/hist_noise_d6_2", "published_at": TODAY - timedelta(days=6), "title": "Automaker Announces Recalls", "description": "Vehicle manufacturer issues safety recall", "nlp_features": {"sentiment": {"label": "negative", "score": 0.92}, "entities": [{"text": "Ford", "label": "ORG"}]}},
 
 
     # 4. Noise Articles for Today (46 articles) - These should be filtered out by the analysis
     # --- Financial Sector Noise ---
-    {"url": "https://e2e.test/noise_fin_1", "published_at": TODAY, "title": "JPMorgan Chase reports steady earnings", "nlp_features": {"sentiment": {"label": "neutral", "score": 0.8}, "entities": [{"text": "JPMorgan Chase", "label": "ORG"}]}},
+    {"url": "https://e2e.test/noise_fin_1", "published_at": TODAY, "title": "JPMorgan Chase reports steady earnings", "description": "Bank reports consistent financial performance", "nlp_features": {"sentiment": {"label": "neutral", "score": 0.8}, "entities": [{"text": "JPMorgan Chase", "label": "ORG"}]}},
     {"url": "https://e2e.test/noise_fin_2", "published_at": TODAY, "title": "Goldman Sachs faces new regulatory probe", "nlp_features": {"sentiment": {"label": "negative", "score": 0.95}, "entities": [{"text": "Goldman Sachs", "label": "ORG"}]}},
     {"url": "https://e2e.test/noise_fin_3", "published_at": TODAY, "title": "Federal Reserve hints at interest rate stability", "nlp_features": {"sentiment": {"label": "neutral", "score": 0.9}, "entities": [{"text": "Federal Reserve", "label": "ORG"}]}},
     {"url": "https://e2e.test/noise_fin_4", "published_at": TODAY, "title": "Visa transaction volume up 5%", "nlp_features": {"sentiment": {"label": "positive", "score": 0.88}, "entities": [{"text": "Visa", "label": "ORG"}]}},
@@ -99,42 +99,120 @@ DUMMY_ARTICLES = [
 ]
 
 # --- Test Environment Management ---
-TEST_TABLES = ['test_articles', 'test_daily_reports', 'test_report_signals', 'test_signal_sources']
 
 def setup_test_environment():
-    """Creates temporary tables and inserts dummy data."""
-    print("--- [SETUP] Creating test environment ---")
-    init_db() # Ensure main DB connection works
-    with get_db_connection() as conn:
-        with conn.cursor() as cursor:
-            # Create temporary tables based on the real ones
-            cursor.execute("CREATE TABLE test_articles (LIKE articles INCLUDING DEFAULTS);")
-            cursor.execute("CREATE TABLE test_daily_reports (LIKE daily_reports INCLUDING DEFAULTS);")
-            cursor.execute("CREATE TABLE test_report_signals (LIKE report_signals INCLUDING DEFAULTS);")
-            cursor.execute("CREATE TABLE test_signal_sources (LIKE signal_sources INCLUDING DEFAULTS);")
-            
-            # Insert dummy data into the temporary articles table
-            for article in DUMMY_ARTICLES:
-                cursor.execute(
-                    "INSERT INTO test_articles (url, published_at, nlp_features, title) VALUES (%s, %s, %s, %s);",
-                    (article['url'], article['published_at'], json.dumps(article['nlp_features']), article['title'])
-                )
-        conn.commit()
-    print(f"Test environment created successfully with {len(DUMMY_ARTICLES)} articles.")
+    """Creates test environment using staging database."""
+    print("--- [SETUP] Creating test environment in staging database ---")
+    
+    # Use staging database for testing
+    from src.database import get_db_connection_string
+    from src.config import settings
+    import psycopg2
+    
+    # Connect to staging database
+    staging_conn_string = get_db_connection_string(dbname='stockometry_staging')
+    
+    try:
+        with psycopg2.connect(staging_conn_string) as conn:
+            conn.autocommit = True
+            with conn.cursor() as cursor:
+                # Drop existing tables to ensure clean schema
+                cursor.execute("DROP TABLE IF EXISTS signal_sources CASCADE;")
+                cursor.execute("DROP TABLE IF EXISTS report_signals CASCADE;")
+                cursor.execute("DROP TABLE IF EXISTS daily_reports CASCADE;")
+                cursor.execute("DROP TABLE IF EXISTS articles CASCADE;")
+                
+                # Create tables with correct schema
+                cursor.execute("""
+                    CREATE TABLE articles (
+                        id SERIAL PRIMARY KEY,
+                        source_id VARCHAR(255),
+                        source_name VARCHAR(255),
+                        author VARCHAR(255),
+                        title TEXT NOT NULL,
+                        url TEXT UNIQUE NOT NULL,
+                        description TEXT,
+                        content TEXT,
+                        published_at TIMESTAMP WITH TIME ZONE NOT NULL,
+                        collected_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                        nlp_features JSONB
+                    );
+                """)
+                
+                # Insert test data
+                for article in DUMMY_ARTICLES:
+                    cursor.execute(
+                        "INSERT INTO articles (url, published_at, nlp_features, title, description) VALUES (%s, %s, %s, %s, %s);",
+                        (article['url'], article['published_at'], json.dumps(article['nlp_features']), article['title'], article.get('description', ''))
+                    )
+                
+                # Create output tables with correct schema (matching OutputProcessor)
+                cursor.execute("""
+                    CREATE TABLE daily_reports (
+                        id SERIAL PRIMARY KEY,
+                        report_date DATE UNIQUE NOT NULL,
+                        summary TEXT,
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                    );
+                """)
+                
+                cursor.execute("""
+                    CREATE TABLE report_signals (
+                        id SERIAL PRIMARY KEY,
+                        report_id INTEGER REFERENCES daily_reports(id) ON DELETE CASCADE,
+                        signal_type VARCHAR(50) NOT NULL,
+                        sector VARCHAR(255),
+                        direction VARCHAR(50),
+                        details TEXT,
+                        stock_symbol VARCHAR(20)
+                    );
+                """)
+                
+                cursor.execute("""
+                    CREATE TABLE signal_sources (
+                        id SERIAL PRIMARY KEY,
+                        signal_id INTEGER REFERENCES report_signals(id) ON DELETE CASCADE,
+                        title TEXT,
+                        url TEXT UNIQUE
+                    );
+                """)
+                
+        print(f"Test environment created successfully with {len(DUMMY_ARTICLES)} articles in staging database.")
+        
+    except Exception as e:
+        print(f"Error setting up staging database: {e}")
+        raise
 
 def cleanup_test_environment():
-    """Drops all temporary tables and deletes the test output file."""
-    print("\n--- [CLEANUP] Tearing down test environment ---")
-    with get_db_connection() as conn:
-        with conn.cursor() as cursor:
-            for table in TEST_TABLES:
-                cursor.execute(f"DROP TABLE IF EXISTS {table};")
-        conn.commit()
+    """Cleans up test environment in staging database."""
+    print("\n--- [CLEANUP] Cleaning up staging database ---")
     
-    output_file = os.path.join("output", f"test_report_{TODAY.date()}.json")
+    # Use staging database for cleanup
+    from src.database import get_db_connection_string
+    import psycopg2
+    
+    staging_conn_string = get_db_connection_string(dbname='stockometry_staging')
+    
+    try:
+        with psycopg2.connect(staging_conn_string) as conn:
+            conn.autocommit = True
+            with conn.cursor() as cursor:
+                # Remove test data from staging database
+                cursor.execute("DELETE FROM articles WHERE url LIKE 'https://e2e.test/%';")
+                cursor.execute("DELETE FROM daily_reports WHERE report_date = %s;", (TODAY.date(),))
+                # report_signals and signal_sources will be deleted automatically due to CASCADE
+                
+        print("Staging database cleaned up.")
+        
+    except Exception as e:
+        print(f"Error cleaning up staging database: {e}")
+    
+    # Remove test output file
+    output_file = os.path.join("output", f"report_{TODAY.date()}.json")
     if os.path.exists(output_file):
         os.remove(output_file)
         print(f"Removed test output file: {output_file}")
+    
     print("Test environment cleaned up.")
 
 # --- The Main Test Execution ---
@@ -145,71 +223,27 @@ def run_e2e_test():
     setup_test_environment()
     
     try:
-        # This is the core of the test. We use 'patch' to temporarily redirect
-        # all function calls to use our temporary test tables.
-        with patch('src.analysis.historical_analyzer.get_db_connection', side_effect=lambda: get_db_connection()) as mock_hist, \
-             patch('src.analysis.today_analyzer.get_db_connection', side_effect=lambda: get_db_connection()) as mock_today, \
-             patch('src.analysis.synthesizer.get_db_connection', side_effect=lambda: get_db_connection()) as mock_synth, \
-             patch('src.output.processor.get_db_connection', side_effect=lambda: get_db_connection()) as mock_output, \
-             patch('src.analysis.historical_analyzer.SECTOR_MAP', new={'MSFT': 'Technology', 'Apple': 'Technology'}), \
-             patch('src.analysis.today_analyzer.SECTOR_MAP', new={'MSFT': 'Technology', 'Apple': 'Technology'}), \
-             patch('src.analysis.synthesizer.SECTOR_MAP', new={'MSFT': 'Technology', 'Apple': 'Technology'}):
-
-            # Override table names within the functions' scope
-            historical_analyzer_query = "SELECT published_at, nlp_features, title, url FROM test_articles WHERE nlp_features IS NOT NULL AND published_at::date >= %s AND published_at::date < %s;"
-            today_analyzer_query = "SELECT title, description, nlp_features, url FROM test_articles WHERE nlp_features IS NOT NULL AND published_at::date = %s;"
-            synthesizer_query = "SELECT nlp_features, title, url FROM test_articles WHERE nlp_features IS NOT NULL AND published_at::date = %s;"
+        # Patch the database connection to use staging database for analysis
+        from src.database import get_db_connection_string
+        import psycopg2
+        
+        def get_staging_db_connection():
+            staging_conn_string = get_db_connection_string(dbname='stockometry_staging')
+            return psycopg2.connect(staging_conn_string)
+        
+        # Patch the database connection in all analysis modules
+        with patch('src.analysis.historical_analyzer.get_db_connection', side_effect=get_staging_db_connection), \
+             patch('src.analysis.today_analyzer.get_db_connection', side_effect=get_staging_db_connection), \
+             patch('src.analysis.synthesizer.get_db_connection', side_effect=get_staging_db_connection), \
+             patch('src.output.processor.get_db_connection', side_effect=get_staging_db_connection):
             
-            # This is a bit complex, but it's how we retarget the SQL queries
-            # We patch the 'execute' method of the cursor object that our functions will use.
-            def patch_cursor_execute(original_cursor):
-                original_execute = original_cursor.execute
-                def new_execute(query, *args, **kwargs):
-                    if "FROM articles" in query:
-                        query = query.replace("FROM articles", "FROM test_articles")
-                    return original_execute(query, *args, **kwargs)
-                original_cursor.execute = new_execute
-                return original_cursor
-
-            mock_hist.return_value.cursor.side_effect = lambda: patch_cursor_execute(get_db_connection().cursor())
-            mock_today.return_value.cursor.side_effect = lambda: patch_cursor_execute(get_db_connection().cursor())
-            mock_synth.return_value.cursor.side_effect = lambda: patch_cursor_execute(get_db_connection().cursor())
-            
-            # For the output processor, we need to redirect its table names too.
-            # We can do this by patching the class itself.
-            class PatchedOutputProcessor(OutputProcessor):
-                def _init_db_tables(self):
-                    # We already created the tables, so we can skip this
-                    pass
-                def _save_to_db(self):
-                    # Temporarily rename tables for the save operation
-                    self.report_object['db_tables'] = {
-                        'reports': 'test_daily_reports',
-                        'signals': 'test_report_signals',
-                        'sources': 'test_signal_sources'
-                    }
-                    # A bit of a hack to inject table names
-                    # In a real large-scale app, you might use a config object for table names
-                    with patch.dict(os.environ, {'DB_REPORTS_TABLE': 'test_daily_reports', 'DB_SIGNALS_TABLE': 'test_report_signals', 'DB_SOURCES_TABLE': 'test_signal_sources'}):
-                         return super()._save_to_db()
-                def _save_to_json(self, report_id):
-                    # Save to a test-specific file
-                    self.output_dir = "output"
-                    self.report_date = TODAY.date()
-                    file_path = os.path.join(self.output_dir, f"test_report_{self.report_date}.json")
-                    output_data = {"report_id": report_id, "report_date": str(self.report_date), **self.report_object}
-                    with open(file_path, 'w') as f:
-                        json.dump(output_data, f, indent=4)
-                    print(f"Test report saved to {file_path}")
-
-            with patch('src.scheduler.OutputProcessor', new=PatchedOutputProcessor):
-                print("\n--- [EXECUTION] Running the end-to-end pipeline on test data ---")
-                run_synthesis_and_save()
+            print("\n--- [EXECUTION] Running the end-to-end pipeline on test data in staging database ---")
+            run_synthesis_and_save()
 
         # --- [VERIFICATION] ---
         print("\n--- [VERIFICATION] Checking test results ---")
         # 1. Verify JSON file
-        output_file = os.path.join("output", f"test_report_{TODAY.date()}.json")
+        output_file = os.path.join("output", f"report_{TODAY.date()}.json")
         assert os.path.exists(output_file), "Output JSON file was not created!"
         print("✅  JSON file was created successfully.")
         with open(output_file, 'r') as f:
@@ -218,14 +252,15 @@ def run_e2e_test():
             assert data['signals']['confidence'][0]['sector'] == 'Technology', "Incorrect sector in JSON!"
             print("✅  JSON content is correct.")
 
-        # 2. Verify Database records
-        with get_db_connection() as conn:
+        # 2. Verify Database records in staging database
+        staging_conn_string = get_db_connection_string(dbname='stockometry_staging')
+        with psycopg2.connect(staging_conn_string) as conn:
             with conn.cursor() as cursor:
-                cursor.execute("SELECT id FROM test_daily_reports WHERE report_date = %s;", (TODAY.date(),))
+                cursor.execute("SELECT id FROM daily_reports WHERE report_date = %s;", (TODAY.date(),))
                 report_id = cursor.fetchone()[0]
                 assert report_id is not None, "Report was not saved to the database!"
                 
-                cursor.execute("SELECT COUNT(*) FROM test_report_signals WHERE report_id = %s AND signal_type = 'CONFIDENCE';", (report_id,))
+                cursor.execute("SELECT COUNT(*) FROM report_signals WHERE report_id = %s AND signal_type = 'CONFIDENCE';", (report_id,))
                 signal_count = cursor.fetchone()[0]
                 assert signal_count == 1, "Incorrect number of confidence signals in database!"
                 print("✅  Database records were saved correctly.")

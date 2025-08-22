@@ -1,6 +1,6 @@
 # src/analysis/today_analyzer.py
 from src.database import get_db_connection
-from datetime import datetime
+from datetime import datetime, timezone
 from .historical_analyzer import SECTOR_MAP
 
 IMPACT_KEYWORDS = ['regulation', 'act', 'tariff', 'subsidy', 'ban', 'approval', 'deal', 'acquisition', 'merger', 'lawsuit']
@@ -11,7 +11,7 @@ def analyze_todays_impact():
     Analyzes today's news for high-impact events, now including source articles.
     """
     print("Starting analysis of today's high-impact news...")
-    today_date = datetime.utcnow().date()
+    today_date = datetime.now(timezone.utc).date()
     query = "SELECT title, description, nlp_features, url FROM articles WHERE nlp_features IS NOT NULL AND published_at::date = %s;"
     
     try:

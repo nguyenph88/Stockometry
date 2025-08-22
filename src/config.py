@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     db_host: str
     db_port: str
     db_name: str
+    db_name_staging: str = "stockometry_staging"  # Default staging database name
 
     # From settings.yml
     api: APISettings = APISettings()
