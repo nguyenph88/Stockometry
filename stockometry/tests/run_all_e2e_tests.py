@@ -6,7 +6,9 @@ import time
 from datetime import datetime
 
 # Add the project root to the Python path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(os.path.dirname(current_dir))
+sys.path.insert(0, project_root)
 
 def run_test(test_name, test_function):
     """Runs a single test and reports the result."""
@@ -26,6 +28,8 @@ def run_test(test_name, test_function):
         duration = end_time - start_time
         print(f"\n❌ {test_name} FAILED in {duration:.2f} seconds")
         print(f"Error: {e}")
+        import traceback
+        traceback.print_exc()
         return False, duration
 
 def main():
@@ -69,6 +73,8 @@ def main():
     except ImportError as e:
         print(f"❌ Import error: {e}")
         print("Make sure all test files are in the tests/ directory")
+        import traceback
+        traceback.print_exc()
         return 1
     
     # Calculate total time
@@ -98,18 +104,16 @@ def main():
     print(f"   Total Tests: {len(results)}")
     print(f"   Passed: {passed}")
     print(f"   Failed: {failed}")
-    print(f"   Success Rate: {(passed/len(results)*100):.1f}%")
     print(f"   Total Test Time: {total_test_time:.2f}s")
-    print(f"   Total Time (including setup): {total_duration:.2f}s")
+    print(f"   Total Suite Time: {total_duration:.2f}s")
     print(f"{'='*80}")
     
     if failed == 0:
-        print("🎉 ALL TESTS PASSED! The system is working correctly.")
+        print("🎉 ALL TESTS PASSED! 🎉")
         return 0
     else:
-        print(f"⚠️  {failed} test(s) failed. Please review the errors above.")
+        print(f"⚠️  {failed} test(s) failed. Please check the errors above.")
         return 1
 
-if __name__ == '__main__':
-    exit_code = main()
-    sys.exit(exit_code)
+if __name__ == "__main__":
+    exit(main())

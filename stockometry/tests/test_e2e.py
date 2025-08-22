@@ -103,11 +103,11 @@ def setup_test_environment():
     print("--- [SETUP] Setting up test environment in staging database ---")
     
     # Initialize staging database with all tables
-    from src.database import init_db
+    from stockometry.database import init_db
     init_db(dbname='stockometry_staging')
     
     # Use staging database for testing
-    from src.database import get_db_connection_string
+    from stockometry.database import get_db_connection_string
     import psycopg2
     
     staging_conn_string = get_db_connection_string(dbname='stockometry_staging')
@@ -145,7 +145,7 @@ def cleanup_test_environment():
     print("\n--- [CLEANUP] Cleaning up staging database ---")
     
     # Use staging database for cleanup
-    from src.database import get_db_connection_string
+    from stockometry.database import get_db_connection_string
     import psycopg2
     
     staging_conn_string = get_db_connection_string(dbname='stockometry_staging')

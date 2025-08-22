@@ -8,6 +8,7 @@ import sys
 import os
 from datetime import datetime, timedelta
 from stockometry.core.output.processor import OutputProcessor
+from stockometry.config import settings
 
 def export_latest_report():
     """Export the most recent report to JSON"""
@@ -20,7 +21,7 @@ def export_latest_report():
         print(f"Latest report found: {json_data['report_date']} (ID: {json_data['report_id']})")
         
         # Save to exports directory
-        file_path = processor.save_json_to_file(json_data, "exports")
+        file_path = processor.save_json_to_file(json_data, settings.output_json_directory)
         if file_path:
             print(f"Report exported to: {file_path}")
             return True
@@ -49,7 +50,7 @@ def export_report_by_date(date_str):
         print(f"Report found: {json_data['report_date']} (ID: {json_data['report_id']})")
         
         # Save to exports directory
-        file_path = processor.save_json_to_file(json_data, "exports")
+        file_path = processor.save_json_to_file(json_data, settings.output_json_directory)
         if file_path:
             print(f"Report exported to: {file_path}")
             return True
@@ -77,7 +78,7 @@ def export_report_by_id(report_id):
         print(f"Report found: {json_data['report_date']} (ID: {json_data['report_id']})")
         
         # Save to exports directory
-        file_path = processor.save_json_to_file(json_data, "exports")
+        file_path = processor.save_json_to_file(json_data, settings.output_json_directory)
         if file_path:
             print(f"Report exported to: {file_path}")
             return True

@@ -11,6 +11,7 @@ from ..core.collectors.news_collector import fetch_and_store_news
 from ..core.collectors.market_data_collector import fetch_and_store_market_data
 from ..core.nlp.processor import process_articles_and_store_features
 from ..core import run_stockometry_analysis
+from ..config import settings
 
 def run_synthesis_and_save():
     """
@@ -33,16 +34,16 @@ def start_scheduler():
     """Initializes the DB and starts the scheduled jobs."""
     init_db()
 
-    scheduler = BlockingScheduler(timezone="UTC")
+    scheduler = BlockingScheduler(timezone=settings.scheduler_timezone)
 
     # --- Data Collection & Processing Jobs ---
-    scheduler.add_job(fetch_and_store_news, 'interval', hours=1, id='news_fetcher')
-    scheduler.add_job(fetch_and_store_market_data, 'cron', hour=1, minute=0, id='market_data_fetcher')
-    scheduler.add_job(process_articles_and_store_features, 'interval', minutes=15, id='nlp_processor')
+    scheduler.add_job(fetch_and_store_news, 'interval', hours=settings.scheduler_news_interval_hours, id='news_fetcher')
+    scheduler.add_job(fetch_and_store_market_data, 'cron', hour=settings.scheduler_market_data_hour, minute=0, id='market_data_fetcher')
+    scheduler.add_job(process_articles_and_store_features, 'interval', minutes=settings.scheduler_nlp_interval_minutes, id='nlp_processor')
 
     # --- Final Synthesis & Output Job ---
     # This single job now handles the entire final analysis and saving process.
-    scheduler.add_job(run_synthesis_and_save, 'cron', hour=2, minute=30, id='final_report_job')
+    scheduler.add_job(run_synthesis_and_save, 'cron', hour=settings.scheduler_final_report_hour, minute=settings.scheduler_final_report_minute, id='final_report_job')
 
     print("Scheduler starting...")
 
