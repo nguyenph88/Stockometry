@@ -10,6 +10,15 @@ All endpoints are prefixed with `/stockometry`
 
 Currently, no authentication is required. For production use, implement appropriate authentication middleware.
 
+## Response Models & Validation
+
+All endpoints use Pydantic response models for consistent data structure and automatic validation. Input parameters are validated using FastAPI's built-in validation:
+
+- **Path Parameters**: Validated with constraints (e.g., `report_id` must be ≥ 1)
+- **Query Parameters**: Validated with ranges and descriptions (e.g., `limit` must be 1-100)
+- **Date Format**: Must be YYYY-MM-DD format for date parameters
+- **Response Models**: Ensure consistent API response structure
+
 ## Endpoints Overview
 
 ### 🔍 Analysis & Reports
@@ -29,8 +38,8 @@ Currently, no authentication is required. For production use, implement appropri
 
 #### Get Latest Report
 - **GET** `/stockometry/reports/latest`
-- **Description**: Get the most recent Stockometry report
-- **Response**: Basic report metadata
+- **Description**: Get the most recent Stockometry report with full details and signals
+- **Response**: Complete report including all trading signals
 - **Example Response**:
 ```json
 {
@@ -38,15 +47,33 @@ Currently, no authentication is required. For production use, implement appropri
   "report_date": "2024-01-15",
   "executive_summary": "Market shows bullish sentiment in technology sector...",
   "run_source": "SCHEDULED",
-  "generated_at_utc": "2024-01-15T14:30:00Z"
+  "generated_at_utc": "2024-01-15T14:30:00Z",
+  "signals": [
+    {
+      "signal_id": 456,
+      "type": "TREND",
+      "sector": "Technology",
+      "direction": "UP",
+      "confidence": 0.85,
+      "details": "Strong positive sentiment in tech sector...",
+      "source_articles": [
+        {
+          "title": "Tech Stocks Rally on AI Breakthrough",
+          "url": "https://example.com/article1"
+        }
+      ]
+    }
+  ],
+  "total_signals": 1
 }
 ```
 
 #### Get Report by Date
-- **GET** `/stockometry/reports/{report_date}`
-- **Parameters**: `report_date` (YYYY-MM-DD format)
+- **GET** `/stockometry/reports/by-date/{report_date}`
+- **Parameters**: `report_date` (YYYY-MM-DD format, validated with regex)
 - **Description**: Get report for a specific date
 - **Response**: Basic report metadata for the specified date
+- **Validation**: Date format must be YYYY-MM-DD
 
 #### List Recent Reports
 - **GET** `/stockometry/reports`

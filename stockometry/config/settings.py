@@ -126,6 +126,10 @@ class Settings:
     def analysis_sector_thresholds(self) -> Dict[str, Any]:
         return self._config.get("analysis", {}).get("sector_thresholds", {})
     
+    @property
+    def analysis_extreme_sentiment_threshold(self) -> float:
+        return self._config.get("analysis", {}).get("extreme_sentiment_threshold", 0.9)
+    
     # --- Output Configuration ---
     @property
     def output_json_directory(self) -> str:
