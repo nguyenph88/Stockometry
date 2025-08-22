@@ -1,5 +1,5 @@
-# Stockometry Configuration File
-# All application configuration consolidated in one place
+# Stockometry Configuration Template
+# Copy this file to settings.yml and fill in your actual values
 
 # --- Environment Configuration ---
 environment: development
@@ -7,7 +7,7 @@ log_level: INFO
 
 # --- API Configuration ---
 apis:
-  news_api_key: what_ever_here
+  news_api_key: "YOUR_NEWS_API_KEY_HERE"
   news_api:
     base_url: "https://newsapi.org/v2/everything"
     query_params:
@@ -18,12 +18,12 @@ apis:
 
 # --- Database Configuration ---
 database:
-  host: 10.0.0.104
+  host: "localhost"
   port: 5432
-  name: stockometry
-  user: postgres
-  password: VerySecurePassword1234567890
-  name_staging: stockometry_staging
+  name: "stockometry"
+  user: "postgres"
+  password: "YOUR_DATABASE_PASSWORD_HERE"
+  name_staging: "stockometry_staging"
 
 # --- Market Data Configuration ---
 market_data:
