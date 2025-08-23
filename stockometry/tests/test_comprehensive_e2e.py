@@ -9,7 +9,6 @@ import json
 import time
 import requests
 from datetime import datetime, timedelta
-from unittest.mock import patch
 from stockometry.database import init_db, get_db_connection_string
 from stockometry.core.collectors.news_collector import fetch_and_store_news
 from stockometry.core.collectors.market_data_collector import fetch_and_store_market_data
@@ -17,6 +16,7 @@ from stockometry.core.nlp.processor import process_articles_and_store_features
 from stockometry.core.analysis.synthesizer import synthesize_analyses
 from stockometry.core.output.processor import OutputProcessor
 from stockometry.config import settings
+from unittest.mock import patch
 import psycopg2
 
 class ComprehensiveE2ETest:
@@ -27,6 +27,20 @@ class ComprehensiveE2ETest:
         self.start_time = datetime.now()
         self.report_id = None
         self.api_base_url = "http://localhost:8000/stockometry"
+        self.staging_db_name = "stockometry_staging"
+        
+        # Force staging database usage
+        self._setup_staging_database_environment()
+    
+    def _setup_staging_database_environment(self):
+        """Force all database operations to use staging database"""
+        # Force staging database name - we'll use patching in individual methods
+        self.log_info(f"Test configured to use staging database: {self.staging_db_name}")
+        self.log_info("All database operations will be forced to staging via patching")
+        
+    def _get_staging_connection(self):
+        """Get a connection specifically to staging database"""
+        return get_db_connection_string(self.staging_db_name)
         
     def log_step(self, step_name, message=""):
         """Log a test step with timestamp"""
@@ -54,7 +68,7 @@ class ComprehensiveE2ETest:
         self.log_step("Drop All Existing Tables")
         
         try:
-            conn_string = get_db_connection_string('stockometry_staging')
+            conn_string = self._get_staging_connection()
             with psycopg2.connect(conn_string) as conn:
                 with conn.cursor() as cursor:
                     # Disable foreign key checks temporarily
@@ -93,7 +107,7 @@ class ComprehensiveE2ETest:
             self.log_success("Database schema initialized successfully")
             
             # Verify connection
-            conn_string = get_db_connection_string('stockometry_staging')
+            conn_string = self._get_staging_connection()
             with psycopg2.connect(conn_string) as conn:
                 with conn.cursor() as cursor:
                     # Check if all required tables exist
@@ -138,7 +152,7 @@ class ComprehensiveE2ETest:
         
         try:
             # Clear existing articles for clean test
-            conn_string = get_db_connection_string('stockometry_staging')
+            conn_string = self._get_staging_connection()
             with psycopg2.connect(conn_string) as conn:
                 with conn.cursor() as cursor:
                     cursor.execute("DELETE FROM articles;")
@@ -147,9 +161,14 @@ class ComprehensiveE2ETest:
                     conn.commit()
                     self.log_info("Cleared existing test data")
             
-            # Collect news
+            # Collect news with forced staging database
             self.log_info("Fetching news from NewsAPI...")
-            fetch_and_store_news()
+            with patch('stockometry.database.get_db_connection') as mock_get_conn:
+                # Mock the context manager to return a staging database connection
+                mock_conn = psycopg2.connect(conn_string)
+                mock_get_conn.return_value.__enter__.return_value = mock_conn
+                mock_get_conn.return_value.__exit__.return_value = None
+                fetch_and_store_news()
             
             # Verify articles were stored
             with psycopg2.connect(conn_string) as conn:
@@ -196,12 +215,18 @@ class ComprehensiveE2ETest:
         self.log_step("Market Data Collection & Storage")
         
         try:
-            # Collect market data
+            # Collect market data with forced staging database
             self.log_info("Fetching market data from yfinance...")
-            fetch_and_store_market_data()
+            conn_string = self._get_staging_connection()
+            with patch('stockometry.database.get_db_connection') as mock_get_conn:
+                # Mock the context manager to return a staging database connection
+                mock_conn = psycopg2.connect(conn_string)
+                mock_get_conn.return_value.__enter__.return_value = mock_conn
+                mock_get_conn.return_value.__exit__.return_value = None
+                fetch_and_store_market_data()
             
             # Verify market data was stored
-            conn_string = get_db_connection_string('stockometry_staging')
+            conn_string = self._get_staging_connection()
             with psycopg2.connect(conn_string) as conn:
                 with conn.cursor() as cursor:
                     cursor.execute("SELECT COUNT(*) FROM stock_data;")
@@ -234,12 +259,18 @@ class ComprehensiveE2ETest:
         self.log_step("NLP Processing & Storage")
         
         try:
-            # Process articles with NLP
+            # Process articles with NLP with forced staging database
             self.log_info("Processing articles with NLP...")
-            process_articles_and_store_features()
+            conn_string = self._get_staging_connection()
+            with patch('stockometry.database.get_db_connection') as mock_get_conn:
+                # Mock the context manager to return a staging database connection
+                mock_conn = psycopg2.connect(conn_string)
+                mock_get_conn.return_value.__enter__.return_value = mock_conn
+                mock_get_conn.return_value.__exit__.return_value = None
+                process_articles_and_store_features()
             
             # Verify NLP features were stored
-            conn_string = get_db_connection_string('stockometry_staging')
+            conn_string = self._get_staging_connection()
             with psycopg2.connect(conn_string) as conn:
                 with conn.cursor() as cursor:
                     cursor.execute("SELECT COUNT(*) FROM articles WHERE nlp_features IS NOT NULL;")
@@ -280,9 +311,11 @@ class ComprehensiveE2ETest:
         self.log_step("Analysis Generation")
         
         try:
-            # Generate analysis
+            # Generate analysis with forced staging database
             self.log_info("Generating analysis...")
-            report_object = synthesize_analyses()
+            with patch('stockometry.database.get_db_connection_string') as mock_get_conn_str:
+                mock_get_conn_str.return_value = self._get_staging_connection()
+                report_object = synthesize_analyses()
             
             if not report_object:
                 self.log_error("Analysis failed to generate report object")
@@ -321,10 +354,12 @@ class ComprehensiveE2ETest:
             if not hasattr(self, 'report_object'):
                 self.log_error("No report object available for saving")
             
-            # Save report to database
+            # Save report to database with forced staging database
             self.log_info("Saving report to database...")
-            processor = OutputProcessor(self.report_object, run_source="COMPREHENSIVE_TEST")
-            report_id = processor.process_and_save()
+            with patch('stockometry.database.get_db_connection_string') as mock_get_conn_str:
+                mock_get_conn_str.return_value = self._get_staging_connection()
+                processor = OutputProcessor(self.report_object, run_source="COMPREHENSIVE_TEST")
+                report_id = processor.process_and_save()
             
             if not report_id:
                 self.log_error("Failed to save report to database")
@@ -333,7 +368,7 @@ class ComprehensiveE2ETest:
             self.log_success(f"Report saved with ID: {report_id}")
             
             # Verify report was stored in database
-            conn_string = get_db_connection_string('stockometry_staging')
+            conn_string = self._get_staging_connection()
             with psycopg2.connect(conn_string) as conn:
                 with conn.cursor() as cursor:
                     # Check daily_reports table
@@ -379,10 +414,12 @@ class ComprehensiveE2ETest:
             if not self.report_id:
                 self.log_error("No report ID available for export")
             
-            # Test export to JSON
+            # Test export to JSON with forced staging database
             self.log_info("Testing JSON export...")
-            processor = OutputProcessor({}, run_source="COMPREHENSIVE_TEST")
-            json_data = processor.export_to_json(report_id=self.report_id)
+            with patch('stockometry.database.get_db_connection_string') as mock_get_conn_str:
+                mock_get_conn_str.return_value = self._get_staging_connection()
+                processor = OutputProcessor({}, run_source="COMPREHENSIVE_TEST")
+                json_data = processor.export_to_json(report_id=self.report_id)
             
             if not json_data:
                 self.log_error("JSON export failed")
@@ -471,7 +508,7 @@ class ComprehensiveE2ETest:
         self.log_step("Test Data Cleanup")
         
         try:
-            conn_string = get_db_connection_string('stockometry_staging')
+            conn_string = self._get_staging_connection()
             with psycopg2.connect(conn_string) as conn:
                 with conn.cursor() as cursor:
                     # Get counts before cleanup for reporting
@@ -554,7 +591,7 @@ class ComprehensiveE2ETest:
         self.log_step("Complete Staging Database Cleanup")
         
         try:
-            conn_string = get_db_connection_string('stockometry_staging')
+            conn_string = self._get_staging_connection()
             with psycopg2.connect(conn_string) as conn:
                 with conn.cursor() as cursor:
                     # Get database size before cleanup
@@ -615,6 +652,7 @@ class ComprehensiveE2ETest:
         print(f"📅 Started at: {self.start_time.strftime('%Y-%m-%d %H:%M:%S')}")
         print(f"🌍 Environment: {settings.environment}")
         print(f"🗄️  Database: {settings.db_name_active}")
+        print(f"🔒 FORCED TO STAGING: {self.staging_db_name}")
         print("=" * 80)
         
         try:
@@ -670,4 +708,4 @@ def run_comprehensive_e2e_test():
     return test.run_comprehensive_test()
 
 if __name__ == "__main__":
-    run_comprehensive_e2e_test()
+    run_comprehensive_e2e_test() 
