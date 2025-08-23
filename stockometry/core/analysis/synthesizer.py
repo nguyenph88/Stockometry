@@ -64,7 +64,7 @@ def predict_stocks_for_sector(sector: str):
     print(f"Running Advanced Mode for sector: {sector}")
     target_tickers = [ticker for ticker, s in SECTOR_MAP.items() if s == sector]
     if not target_tickers: return []
-    today_date = datetime.now(timezone.utc).date()
+    today_date = datetime.now().date()
     query = "SELECT nlp_features, title, url FROM articles WHERE nlp_features IS NOT NULL AND published_at::date = %s;"
     
     try:

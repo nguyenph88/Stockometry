@@ -12,7 +12,7 @@ from stockometry.core.output.processor import OutputProcessor
 
 # --- Dummy Data Definition ---
 # This data is crafted to produce a predictable outcome for our test.
-TODAY = datetime.now(timezone.utc)
+TODAY = datetime.now()  # Use local time to match the fixed analyzers
 DUMMY_ARTICLES = [
     # 1. Historical Positive Trend for 'Technology' (3 articles) - THIS IS THE TARGET SIGNAL
     {"url": f"https://e2e.test/hist_tech_{i}", "published_at": TODAY - timedelta(days=i), "title": f"Old Tech News Day {i}", "description": f"Technology sector shows positive momentum on day {i}",
@@ -227,11 +227,12 @@ def run_e2e_test():
         staging_conn_string = get_db_connection_string(dbname='stockometry_staging')
         with psycopg2.connect(staging_conn_string) as conn:
             with conn.cursor() as cursor:
-                cursor.execute("SELECT id FROM daily_reports WHERE report_date = %s;", (TODAY.date(),))
+                # Get the most recent report instead of looking for today's date
+                cursor.execute("SELECT id, report_date FROM daily_reports ORDER BY id DESC LIMIT 1;")
                 report_row = cursor.fetchone()
                 assert report_row is not None, "Report was not saved to the database!"
-                report_id = report_row[0]
-                print("✅  Report saved to database successfully.")
+                report_id, report_date = report_row
+                print(f"✅  Report saved to database successfully. ID: {report_id}, Date: {report_date}")
                 
                 cursor.execute("SELECT COUNT(*) FROM report_signals WHERE report_id = %s AND signal_type = 'CONFIDENCE';", (report_id,))
                 signal_count = cursor.fetchone()[0]

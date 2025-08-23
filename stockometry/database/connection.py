@@ -64,9 +64,59 @@ def init_db(dbname=None):
                         description TEXT,
                         content TEXT,
                         published_at TIMESTAMP WITH TIME ZONE NOT NULL,
-                        collected_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                        collected_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                        nlp_features JSONB,
+                        stock_symbol VARCHAR(20),
+                        sector VARCHAR(100),
+                        sentiment_score DECIMAL(3,2),
+                        impact_level VARCHAR(20)
                     );
                 """)
+                
+                # Check if nlp_features column exists, if not add it
+                cursor.execute("""
+                    SELECT column_name FROM information_schema.columns 
+                    WHERE table_name = 'articles' AND column_name = 'nlp_features';
+                """)
+                if not cursor.fetchone():
+                    cursor.execute("ALTER TABLE articles ADD COLUMN nlp_features JSONB;")
+                    print("Added nlp_features column to articles table")
+                
+                # Check if stock_symbol column exists, if not add it
+                cursor.execute("""
+                    SELECT column_name FROM information_schema.columns 
+                    WHERE table_name = 'articles' AND column_name = 'stock_symbol';
+                """)
+                if not cursor.fetchone():
+                    cursor.execute("ALTER TABLE articles ADD COLUMN stock_symbol VARCHAR(20);")
+                    print("Added stock_symbol column to articles table")
+                
+                # Check if sector column exists, if not add it
+                cursor.execute("""
+                    SELECT column_name FROM information_schema.columns 
+                    WHERE table_name = 'articles' AND column_name = 'sector';
+                """)
+                if not cursor.fetchone():
+                    cursor.execute("ALTER TABLE articles ADD COLUMN sector VARCHAR(100);")
+                    print("Added sector column to articles table")
+                
+                # Check if sentiment_score column exists, if not add it
+                cursor.execute("""
+                    SELECT column_name FROM information_schema.columns 
+                    WHERE table_name = 'articles' AND column_name = 'sentiment_score';
+                """)
+                if not cursor.fetchone():
+                    cursor.execute("ALTER TABLE articles ADD COLUMN sentiment_score DECIMAL(3,2);")
+                    print("Added sentiment_score column to articles table")
+                
+                # Check if impact_level column exists, if not add it
+                cursor.execute("""
+                    SELECT column_name FROM information_schema.columns 
+                    WHERE table_name = 'articles' AND column_name = 'impact_level';
+                """)
+                if not cursor.fetchone():
+                    cursor.execute("ALTER TABLE articles ADD COLUMN impact_level VARCHAR(20);")
+                    print("Added impact_level column to articles table")
                 
                 # Create stock_data table
                 cursor.execute("""
@@ -131,9 +181,19 @@ def init_db(dbname=None):
                         sector VARCHAR(255), 
                         direction VARCHAR(50), 
                         details TEXT,
+                        stock_symbol VARCHAR(20),
                         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
                     );
                 """)
+                
+                # Check if stock_symbol column exists in report_signals, if not add it
+                cursor.execute("""
+                    SELECT column_name FROM information_schema.columns 
+                    WHERE table_name = 'report_signals' AND column_name = 'stock_symbol';
+                """)
+                if not cursor.fetchone():
+                    cursor.execute("ALTER TABLE report_signals ADD COLUMN stock_symbol VARCHAR(20);")
+                    print("Added stock_symbol column to report_signals table")
                 
                 # Check if created_at column exists in report_signals, if not add it
                 cursor.execute("""

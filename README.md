@@ -1,4 +1,4 @@
-# Stockometry - Version 3.0
+# Stockometry - Version 2.0.0
 
 ## Overview
 Stockometry is a **two-stage financial analysis system** that combines historical trend analysis with real-time news impact assessment to generate actionable trading signals. The system analyzes 11 market sectors and provides buy/sell recommendations based on sentiment trends and current events.
@@ -71,6 +71,17 @@ from stockometry.api.routes import router
 
 app = FastAPI()
 app.include_router(router, prefix="/api/v1")
+```
+
+### Testing
+Run the E2E tests with mock and fake data:
+```python
+python -m stockometry.tests.run_all_e2e_tests
+```
+
+Run the E2E tests with real workflow to test each components:
+```python
+python -m stockometry.tests.run_comprehensive_test
 ```
 
 ## Configuration

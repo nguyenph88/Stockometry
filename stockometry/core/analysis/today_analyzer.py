@@ -11,7 +11,7 @@ def analyze_todays_impact():
     Analyzes today's news for high-impact events, now including source articles.
     """
     print("Starting analysis of today's high-impact news...")
-    today_date = datetime.now(timezone.utc).date()
+    today_date = datetime.now().date()
     query = "SELECT title, description, nlp_features, url FROM articles WHERE nlp_features IS NOT NULL AND published_at::date = %s;"
     
     try:
