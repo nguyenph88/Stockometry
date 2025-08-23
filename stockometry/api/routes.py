@@ -11,7 +11,7 @@ from ..core import run_stockometry_analysis
 from ..core.analysis.today_analyzer import analyze_todays_impact
 from ..core.analysis.historical_analyzer import analyze_historical_trends
 from ..core.output.processor import OutputProcessor
-from ..database import get_db_connection
+from ..database import get_db_connection, init_db
 from ..config import settings
 from ..scheduler.scheduler import start_scheduler as start_sched, stop_scheduler as stop_sched, get_scheduler_status as get_sched_status
 
@@ -87,6 +87,31 @@ class StatusResponse(BaseModel):
     latest_report: Optional[str] = None
     version: str
     error: Optional[str] = None
+
+class InitDBResponse(BaseModel):
+    message: str
+    status: str
+    details: str
+
+@router.post("/init_db", response_model=InitDBResponse)
+async def initialize_database():
+    """
+    Initialize database tables if they don't exist
+    Safe to call multiple times - won't overwrite existing tables
+    """
+    try:
+        init_db()
+        return InitDBResponse(
+            message="Database initialized successfully",
+            status="success",
+            details="All tables created/verified. Safe to use the application now."
+        )
+    except Exception as e:
+        return InitDBResponse(
+            message="Database initialization failed",
+            status="error",
+            details=f"Error: {str(e)}"
+        )
 
 @router.post("/analyze", response_model=AnalysisResponse)
 async def trigger_analysis(background_tasks: BackgroundTasks):
@@ -483,13 +508,13 @@ async def health():
                     status="healthy",
                     total_reports=report_count,
                     latest_report=latest_report[0].isoformat() if latest_report else None,
-                    version="2.0.0"
+                    version="2.1.0"
                 )
     except Exception as e:
         return StatusResponse(
             status="unhealthy",
             error=str(e),
-            version="2.0.0"
+            version="2.1.0"
         )
 
 # Keep the create_router function for backward compatibility

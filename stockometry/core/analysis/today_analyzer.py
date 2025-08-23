@@ -1,6 +1,6 @@
 # src/analysis/today_analyzer.py
 from ...database import get_db_connection
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from .historical_analyzer import SECTOR_MAP
 
 IMPACT_KEYWORDS = ['regulation', 'act', 'tariff', 'subsidy', 'ban', 'approval', 'deal', 'acquisition', 'merger', 'lawsuit']
@@ -9,9 +9,13 @@ EXTREME_SENTIMENT_THRESHOLD = 0.90
 def analyze_todays_impact():
     """
     Analyzes today's news for high-impact events, now including source articles.
+    Falls back to yesterday's articles if no articles found for today.
     """
     print("Starting analysis of today's high-impact news...")
-    today_date = datetime.now().date()
+    today_date = datetime.now(timezone.utc).date()  # Use UTC to match database timestamps
+    yesterday_date = today_date - timedelta(days=1)
+    
+    # First try to get today's articles
     query = "SELECT title, description, nlp_features, url FROM articles WHERE nlp_features IS NOT NULL AND published_at::date = %s;"
     
     try:
@@ -20,10 +24,18 @@ def analyze_todays_impact():
             cursor.execute(query, (today_date,))
             todays_articles = cursor.fetchall()
 
-        if not todays_articles:
-            return {"signals": [], "summary_points": ["No articles found for today's date."]}
-
-        print(f"Found {len(todays_articles)} articles for today's analysis")
+            # If no articles found for today, fall back to yesterday
+            if not todays_articles:
+                print(f"No articles found for today ({today_date}), falling back to yesterday ({yesterday_date})")
+                cursor.execute(query, (yesterday_date,))
+                todays_articles = cursor.fetchall()
+                
+                if not todays_articles:
+                    return {"signals": [], "summary_points": ["No articles found for today's date or yesterday."]}
+                else:
+                    print(f"Found {len(todays_articles)} articles from yesterday for analysis")
+            else:
+                print(f"Found {len(todays_articles)} articles for today's analysis")
         
         signals = []
         summary_points = []

@@ -5,6 +5,34 @@ All notable changes to Stockometry will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2025-08-22
+
+### 🐛 Bug Fixes & Improvements
+- **Database Connection Issues**: Fixed "relation does not exist" errors during first run
+- **Timezone Handling**: Resolved UTC vs local time inconsistencies in analysis modules
+- **Fallback Logic**: Added fallback mechanism to use yesterday's articles if today's are unavailable
+- **Database Initialization**: Added `/init_db` endpoint for manual database table creation
+- **API Endpoint Fixes**: Fixed missing `confidence` column errors and `report_object` argument issues
+- **NLP Pipeline**: Fixed `sentiment_pipeline` attribute errors with robust fallback handling
+
+### 🔧 Core Improvements
+- **Database Schema Migration**: Enhanced automatic column addition with `ALTER TABLE ADD COLUMN IF NOT EXISTS`
+- **Connection Management**: Improved database connection handling with proper context management
+- **Error Recovery**: Better error handling and recovery mechanisms throughout the pipeline
+- **Test Infrastructure**: Enhanced test setup and cleanup procedures
+
+### 📚 Documentation Updates
+- **README Consolidation**: Merged content from `EXAMPLE.md` into main README for better accessibility
+- **API Documentation**: Updated endpoint documentation to reflect current implementation
+- **Donation Links**: Added GitHub Sponsors and Buy Me a Coffee links for project support
+
+### 🧪 Testing Improvements
+- **Comprehensive E2E Tests**: Enhanced test suite with better database isolation
+- **Staging Database**: Improved staging database usage for comprehensive testing
+- **Test Cleanup**: Better cleanup procedures to ensure pristine test environment
+
+---
+
 ## [2.0.0] - 2025-01-22
 
 ### 🚀 Major Features
@@ -95,7 +123,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
-- **v2.0.0** (Current): Complete architecture redesign, database-first approach, comprehensive testing
+- **v2.1.0** (Current): Bug fixes, timezone handling improvements, fallback logic, enhanced testing
+- **v2.0.0**: Complete architecture redesign, database-first approach, comprehensive testing
 - **v1.0.0**: Initial release with basic functionality
 
 ---

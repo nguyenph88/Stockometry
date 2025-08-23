@@ -145,7 +145,7 @@ def analyze_historical_trends():
     now including the source articles that contributed to the trend.
     """
     print("Starting historical trend analysis...")
-    end_date = datetime.now().date()
+    end_date = datetime.now(timezone.utc).date()  # Use UTC to match database timestamps
     start_date = end_date - timedelta(days=7)
     
     query = "SELECT published_at, nlp_features, title, url FROM articles WHERE nlp_features IS NOT NULL AND published_at::date >= %s AND published_at::date < %s;"

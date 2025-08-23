@@ -325,7 +325,7 @@ All endpoints use Pydantic response models for consistent data structure and aut
   "status": "healthy",
   "total_reports": 45,
   "latest_report": "2024-01-15T14:30:00Z",
-  "version": "2.0.0"
+  "version": "2.1.0"
 }
 ```
 
@@ -450,6 +450,7 @@ curl http://localhost:8000/stockometry/health
 
 ## Version History
 
+- **2.1.0**: Enhanced stability and bug fixes
 - **2.0.0**: Complete API redesign with database-first architecture
 - Added full report access, signal details, and export functionality
 - Added today's and historical analysis endpoints

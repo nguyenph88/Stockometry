@@ -1,4 +1,4 @@
-# Stockometry - Version 2.0.0
+# Stockometry - Version 2.1.0
 
 ## Overview
 Stockometry is a **two-stage financial analysis system** that combines historical trend analysis with real-time news impact assessment to generate actionable trading signals. The system analyzes 11 market sectors and provides buy/sell recommendations based on sentiment trends and current events.
@@ -113,13 +113,6 @@ scheduler:
   news_interval_hours: 1
   final_report_hour: 2
   final_report_minute: 30
-```
-
-## Testing
-
-### Run All Tests
-```bash
-python -m stockometry.tests.run_all_e2e_tests
 ```
 
 ## Documentation

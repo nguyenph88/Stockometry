@@ -64,13 +64,13 @@ def run_stockometry_analysis(run_source: str = "ONDEMAND"):
                 logger.info(f"Report saved to database (Source: {run_source})")
                 
                 # Optional: Export to JSON if needed
-                logger.info("Exporting report to JSON format...")
-                json_data = processor.export_to_json(report_id=report_id)
-                if json_data:
-                    logger.info("JSON export successful")
-                    processor.save_json_to_file(json_data, "exports")
-                else:
-                    logger.warning("JSON export failed")
+                # logger.info("Exporting report to JSON format...")
+                # json_data = processor.export_to_json(report_id=report_id)
+                # if json_data:
+                #     logger.info("JSON export successful")
+                #     processor.save_json_to_file(json_data, "exports")
+                # else:
+                #     logger.warning("JSON export failed")
                 
                 # Calculate total runtime
                 end_time = time.time()

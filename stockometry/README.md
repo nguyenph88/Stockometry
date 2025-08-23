@@ -1,6 +1,6 @@
 # Stockometry - Modular Package
 
-**Version 2.0.0** - Database-first architecture with comprehensive E2E testing
+**Version 2.1.0** - Database-first architecture with comprehensive E2E testing and enhanced stability
 
 ## Overview
 Stockometry is a **two-stage financial analysis system** that combines historical trend analysis with real-time news impact assessment to generate actionable trading signals. The system analyzes 11 market sectors and provides buy/sell recommendations based on sentiment trends and current events.

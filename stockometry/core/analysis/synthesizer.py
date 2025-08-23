@@ -2,7 +2,7 @@
 from .historical_analyzer import analyze_historical_trends, SECTOR_MAP
 from .today_analyzer import analyze_todays_impact
 from ...database import get_db_connection
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 def synthesize_analyses():
     """
@@ -64,7 +64,9 @@ def predict_stocks_for_sector(sector: str):
     print(f"Running Advanced Mode for sector: {sector}")
     target_tickers = [ticker for ticker, s in SECTOR_MAP.items() if s == sector]
     if not target_tickers: return []
-    today_date = datetime.now().date()
+    
+    today_date = datetime.now(timezone.utc).date()  # Use UTC to match database timestamps
+    yesterday_date = today_date - timedelta(days=1)
     query = "SELECT nlp_features, title, url FROM articles WHERE nlp_features IS NOT NULL AND published_at::date = %s;"
     
     try:
@@ -72,6 +74,12 @@ def predict_stocks_for_sector(sector: str):
             cursor = conn.cursor()
             cursor.execute(query, (today_date,))
             todays_articles = cursor.fetchall()
+            
+            # If no articles found for today, fall back to yesterday
+            if not todays_articles:
+                print(f"No articles found for today ({today_date}), falling back to yesterday ({yesterday_date})")
+                cursor.execute(query, (yesterday_date,))
+                todays_articles = cursor.fetchall()
             
         stock_scores = {}
         for features, title, url in todays_articles:

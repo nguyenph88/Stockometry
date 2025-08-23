@@ -4,9 +4,6 @@ Stockometry Tests - Test suite for the modular package
 
 # Import all test modules for easy access
 from .test_setup import *
-from .test_collectors import *
-from .test_database import *
-from .test_milestone2_NLP import *
 from .test_e2e import *
 from .test_e2e_bullish_tech import *
 from .test_e2e_bearish_financial import *
