@@ -1,97 +1,57 @@
-# Stockometry Modular Package
+# Stockometry - Modular Package
 
-This is the modular version of Stockometry, organized for both standalone use and FastAPI integration.
+**Version 2.0.0** - Database-first architecture with comprehensive E2E testing
 
-## Structure
+## Overview
+Stockometry is a **two-stage financial analysis system** that combines historical trend analysis with real-time news impact assessment to generate actionable trading signals. The system analyzes 11 market sectors and provides buy/sell recommendations based on sentiment trends and current events.
 
-```
-stockometry/
-├── __init__.py                 # Main package entry point
-├── core/                       # Core business logic
-│   ├── collectors/            # Data collection (news, market data)
-│   ├── nlp/                   # NLP processing
-│   ├── analysis/              # Analysis logic
-│   └── output/                # Output processing
-├── cli/                       # Standalone CLI interface
-│   ├── run_once.py            # One-time execution
-│   └── scheduler.py           # Standalone scheduler
-├── api/                       # FastAPI integration layer
-│   └── routes.py              # API endpoints
-├── config/                    # Configuration management
-│   └── settings.py            # Unified settings
-├── database/                  # Database layer
-│   └── connection.py          # DB connection management
-├── tests/                     # Test suite
-│   ├── test_e2e.py           # Main E2E test
-│   ├── test_e2e_*.py         # Scenario-specific E2E tests
-│   ├── test_collectors.py    # Data collection tests
-│   ├── test_database.py      # Database tests
-│   └── run_all_e2e_tests.py  # Test runner
-└── utils/                     # Shared utilities
-```
+## ☕ Support the Project
 
-## Usage
+If you find Stockometry helpful, consider supporting the development:
 
-### Standalone Mode (Original Functionality)
+[![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-Support%20nguyenph88-red?style=for-the-badge&logo=github)](https://github.com/sponsors/nguyenph88)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Support%20nguyenph88-FFDD00?style=for-the-badge&logo=buy-me-a-coffee)](https://www.buymeacoffee.com/nguyenph88)
 
+## Quick Start
+
+### Installation
 ```bash
-# Run once (equivalent to original run_once.py)
-python stockometry/cli/run_once.py
+pip install -r requirements.txt
+python -m spacy download en_core_web_sm
+```
 
-# Start scheduler (equivalent to original scheduler.py)
-python stockometry/cli/scheduler.py
+### Run Analysis
+```bash
+# Standalone mode
+python -m stockometry.cli.run_once
+
+# Start scheduler
+python -m stockometry.scheduler.scheduler
+
+# Run comprehensive E2E test
+python -m stockometry.tests.run_comprehensive_test
 ```
 
 ### FastAPI Integration
-
 ```python
 from fastapi import FastAPI
-from stockometry.api import create_router
+from stockometry.api.routes import router
 
 app = FastAPI()
-stockometry_router = create_router()
-app.include_router(stockometry_router)
-
-# Available endpoints:
-# POST /stockometry/analyze          # Trigger manual analysis
-# GET  /stockometry/reports/latest   # Get latest report
-# GET  /stockometry/reports/{date}   # Get report by date
-# GET  /stockometry/reports          # List recent reports
-# GET  /stockometry/status           # Service status
+app.include_router(router)
 ```
 
-### Direct Core Usage
+## Key Features
+- **11-Sector Coverage**: Technology, Healthcare, Financial Services, etc.
+- **NLP-Powered Analysis**: spaCy + FinBERT for sentiment analysis
+- **Database-First Storage**: PostgreSQL with on-demand JSON export
+- **Comprehensive Testing**: 11-step E2E workflow validation
+- **Modular Architecture**: Plug-and-play for any FastAPI app
 
-```python
-from stockometry.core import run_stockometry_analysis
+## Documentation
+- **[API_ENDPOINTS.md](docs/API_ENDPOINTS.md)**: Complete API reference
+- **[CHANGELOG.md](../CHANGELOG.md)**: Version history and changes
+- **[README.md](../README.md)**: Main project documentation
 
-# Run analysis with custom run source
-success = run_stockometry_analysis(run_source="CUSTOM")
-```
-
-### Testing
-
-```bash
-# Run individual E2E test
-python -m stockometry.tests.test_e2e
-
-# Run all E2E tests
-python -m stockometry.tests.run_all_e2e_tests
-
-# Run specific scenario test
-python -m stockometry.tests.test_e2e_bullish_tech
-python -m stockometry.tests.test_e2e_bearish_financial
-python -m stockometry.tests.test_e2e_mixed_signals
-python -m stockometry.tests.test_e2e_edge_cases
-```
-
-## Migration Notes
-
-- All original functionality is preserved
-- Import paths have been updated to use relative imports
-- Configuration and database connections remain the same
-- All tests have been moved to the modular structure and updated
-
-## Version
-
-This is Stockometry v3.0.0 - Modular Edition
+## License
+MIT License - see [LICENSE](../LICENSE) for details.
