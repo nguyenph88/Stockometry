@@ -460,10 +460,10 @@ async def get_scheduler_status():
             "error": str(e)
         }
 
-@router.get("/status", response_model=StatusResponse)
-async def get_status():
+@router.get("/health", response_model=StatusResponse)
+async def health():
     """
-    Get Stockometry service status
+    Health check endpoint - Get Stockometry service health status
     """
     try:
         with get_db_connection() as conn:
@@ -483,13 +483,13 @@ async def get_status():
                     status="healthy",
                     total_reports=report_count,
                     latest_report=latest_report[0].isoformat() if latest_report else None,
-                    version="3.0.0"
+                    version="2.0.0"
                 )
     except Exception as e:
         return StatusResponse(
             status="unhealthy",
             error=str(e),
-            version="3.0.0"
+            version="2.0.0"
         )
 
 # Keep the create_router function for backward compatibility

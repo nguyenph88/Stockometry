@@ -21,6 +21,25 @@ All endpoints use Pydantic response models for consistent data structure and aut
 
 ## Endpoints Overview
 
+| Category | Endpoint | Method | Description |
+|----------|----------|--------|-------------|
+| **Analysis** | `/analyze` | POST | Trigger manual analysis |
+| **Analysis** | `/analyze/today` | GET | Get today's catalyst analysis |
+| **Analysis** | `/analyze/historical` | GET | Get historical trends (1-30 days) |
+| **Reports** | `/reports/latest` | GET | Get latest full report |
+| **Reports** | `/reports/by-date/{date}` | GET | Get report by specific date |
+| **Reports** | `/reports` | GET | List recent reports |
+| **Reports** | `/reports/{id}/full` | GET | Get full report by ID |
+| **Signals** | `/signals/{report_id}` | GET | Get signals for specific report |
+| **Export** | `/export/{id}/json` | GET | Export report as JSON |
+| **Config** | `/config` | GET | Get configuration |
+| **Scheduler** | `/scheduler/start` | POST | Start scheduler |
+| **Scheduler** | `/scheduler/stop` | POST | Stop scheduler |
+| **Scheduler** | `/scheduler/status` | GET | Get scheduler status |
+| **Health** | `/health` | GET | Service health status |
+
+**Total: 14 API Endpoints**
+
 ### 🔍 Analysis & Reports
 
 #### Trigger Analysis
@@ -32,6 +51,55 @@ All endpoints use Pydantic response models for consistent data structure and aut
 {
   "message": "Analysis started",
   "status": "running",
+  "run_source": "ONDEMAND"
+}
+```
+
+#### Get Today's Analysis
+- **GET** `/stockometry/analyze/today`
+- **Description**: Get today's high-impact news analysis (independent of full reports)
+- **Response**: Today's analysis results
+- **Example Response**:
+```json
+{
+  "analysis_date": "2024-01-15",
+  "signals": [
+    {
+      "type": "IMPACT",
+      "sector": "Financial Services",
+      "direction": "DOWN",
+      "details": "Regulatory changes affecting banking sector..."
+    }
+  ],
+  "summary_points": [
+    "A high-impact event for the 'Financial Services' sector suggests a short-term move down."
+  ],
+  "total_signals": 1,
+  "run_source": "ONDEMAND"
+}
+```
+
+#### Get Historical Analysis
+- **GET** `/stockometry/analyze/historical`
+- **Query Parameters**: `days` (default: 6, range: 1-30)
+- **Description**: Get historical trends analysis for the specified number of days
+- **Response**: Historical analysis results with trends and signals
+- **Example Response**:
+```json
+{
+  "analysis_period_days": 6,
+  "signals": [
+    {
+      "type": "TREND",
+      "sector": "Technology",
+      "direction": "UP",
+      "details": "Sustained positive momentum in tech sector..."
+    }
+  ],
+  "summary_points": [
+    "Technology sector shows consistent upward trend over 6 days"
+  ],
+  "total_signals": 1,
   "run_source": "ONDEMAND"
 }
 ```
@@ -54,14 +122,8 @@ All endpoints use Pydantic response models for consistent data structure and aut
       "type": "TREND",
       "sector": "Technology",
       "direction": "UP",
-      "confidence": 0.85,
       "details": "Strong positive sentiment in tech sector...",
-      "source_articles": [
-        {
-          "title": "Tech Stocks Rally on AI Breakthrough",
-          "url": "https://example.com/article1"
-        }
-      ]
+      "stock_symbol": "AAPL"
     }
   ],
   "total_signals": 1
@@ -74,18 +136,43 @@ All endpoints use Pydantic response models for consistent data structure and aut
 - **Description**: Get report for a specific date
 - **Response**: Basic report metadata for the specified date
 - **Validation**: Date format must be YYYY-MM-DD
+- **Example Response**:
+```json
+{
+  "report_id": 123,
+  "report_date": "2024-01-15",
+  "executive_summary": "Market shows bullish sentiment...",
+  "run_source": "SCHEDULED",
+  "generated_at_utc": "2024-01-15T14:30:00Z"
+}
+```
 
 #### List Recent Reports
 - **GET** `/stockometry/reports`
 - **Query Parameters**: `limit` (default: 10, max: 100)
 - **Description**: List recent reports with pagination
 - **Response**: Array of reports with metadata
+- **Example Response**:
+```json
+{
+  "reports": [
+    {
+      "report_id": 123,
+      "report_date": "2024-01-15",
+      "executive_summary": "Market shows bullish sentiment...",
+      "run_source": "SCHEDULED",
+      "generated_at_utc": "2024-01-15T14:30:00Z"
+    }
+  ],
+  "count": 1
+}
+```
 
 #### Get Full Report
 - **GET** `/stockometry/reports/{report_id}/full`
 - **Parameters**: `report_id` (integer)
 - **Description**: Get complete report with all signals and analysis details
-- **Response**: Full report including all trading signals
+- **Response**: Full report including all signals
 - **Example Response**:
 ```json
 {
@@ -100,14 +187,8 @@ All endpoints use Pydantic response models for consistent data structure and aut
       "type": "TREND",
       "sector": "Technology",
       "direction": "UP",
-      "confidence": 0.85,
       "details": "Strong positive sentiment in tech sector...",
-      "source_articles": [
-        {
-          "title": "Tech Stocks Rally on AI Breakthrough",
-          "url": "https://example.com/article1"
-        }
-      ]
+      "stock_symbol": "AAPL"
     }
   ],
   "total_signals": 1
@@ -119,6 +200,22 @@ All endpoints use Pydantic response models for consistent data structure and aut
 - **Parameters**: `report_id` (integer)
 - **Description**: Get individual trading signals for a specific report
 - **Response**: Array of signals with details
+- **Example Response**:
+```json
+{
+  "signals": [
+    {
+      "signal_id": 456,
+      "type": "TREND",
+      "sector": "Technology",
+      "direction": "UP",
+      "details": "Strong positive sentiment in tech sector...",
+      "stock_symbol": "AAPL"
+    }
+  ],
+  "count": 1
+}
+```
 
 ### 📊 Export & Data Analysis
 
@@ -129,41 +226,7 @@ All endpoints use Pydantic response models for consistent data structure and aut
 - **Response**: Full report data in JSON format
 - **Content-Type**: `application/json`
 
-#### Today's Analysis
-- **GET** `/stockometry/analyze/today`
-- **Description**: Get today's high-impact news analysis (independent of full reports)
-- **Response**: Today's analysis results
-- **Example Response**:
-```json
-{
-  "analysis_date": "2024-01-15",
-  "signals": [
-    {
-      "type": "IMPACT",
-      "sector": "Financial Services",
-      "direction": "DOWN",
-      "details": "Regulatory changes affecting banking sector...",
-      "source_articles": [
-        {
-          "title": "New Banking Regulations Announced",
-          "url": "https://example.com/article2"
-        }
-      ]
-    }
-  ],
-  "summary_points": [
-    "A high-impact event for the 'Financial Services' sector suggests a short-term move down."
-  ],
-  "total_signals": 1,
-  "run_source": "ONDEMAND"
-}
-```
 
-#### Historical Analysis
-- **GET** `/stockometry/analyze/historical`
-- **Query Parameters**: `days` (default: 6, range: 1-30)
-- **Description**: Get historical trends analysis for the specified number of days
-- **Response**: Historical analysis results with trends and signals
 
 ### ⚙️ Configuration & Control
 
@@ -252,17 +315,17 @@ All endpoints use Pydantic response models for consistent data structure and aut
 
 ### 🏥 Health & Status
 
-#### Service Status
-- **GET** `/stockometry/status`
-- **Description**: Get Stockometry service health status
-- **Response**: Service health information
+#### Health Check
+- **GET** `/stockometry/health`
+- **Description**: Health check endpoint - Get Stockometry service health status
+- **Response**: Service health information with report counts and version
 - **Example Response**:
 ```json
 {
   "status": "healthy",
   "total_reports": 45,
   "latest_report": "2024-01-15T14:30:00Z",
-  "version": "3.0.0"
+  "version": "2.0.0"
 }
 ```
 
@@ -306,7 +369,7 @@ All timestamps are in UTC (Coordinated Universal Time)
 ### Signal Types
 - `TREND`: Multi-day trend signals
 - `IMPACT`: High-impact event signals
-- `SENTIMENT`: Extreme sentiment signals
+- `CONFIDENCE`: High-confidence trading signals
 
 ### Sector Values
 - Technology
@@ -382,16 +445,18 @@ curl http://localhost:8000/stockometry/analyze/today
 
 ### Health Check
 ```bash
-curl http://localhost:8000/stockometry/status
+curl http://localhost:8000/stockometry/health
 ```
 
 ## Version History
 
-- **3.0.0**: Initial API release with comprehensive endpoints
+- **2.0.0**: Complete API redesign with database-first architecture
 - Added full report access, signal details, and export functionality
 - Added today's and historical analysis endpoints
 - Added scheduler control endpoints
 - Added configuration access endpoint
+- Removed confidence and source_articles fields from signals
+- Added stock_symbol field to signals
 
 ## Support
 

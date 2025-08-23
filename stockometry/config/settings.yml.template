@@ -1,13 +1,13 @@
-# Stockometry Configuration Template
-# Copy this file to settings.yml and fill in your actual values
+# Stockometry Configuration File
+# All application configuration consolidated in one place
 
 # --- Environment Configuration ---
-environment: development
+environment: staging
 log_level: INFO
 
 # --- API Configuration ---
 apis:
-  news_api_key: "YOUR_NEWS_API_KEY_HERE"
+  news_api_key: 123456
   news_api:
     base_url: "https://newsapi.org/v2/everything"
     query_params:
@@ -18,12 +18,12 @@ apis:
 
 # --- Database Configuration ---
 database:
-  host: "localhost"
+  host: 10.0.0.104
   port: 5432
-  name: "stockometry"
-  user: "postgres"
-  password: "YOUR_DATABASE_PASSWORD_HERE"
-  name_staging: "stockometry_staging"
+  name: stockometry
+  user: postgres
+  password: VerySecurePassword123456
+  name_staging: stockometry_staging
 
 # --- Market Data Configuration ---
 market_data:
@@ -102,7 +102,6 @@ market_data:
     - "NEM"
     - "DOW"
     - "DD"
-    - "BLL"
     - "NUE"
     - "VMC"
     - "ALB"
@@ -154,6 +153,7 @@ nlp:
 # --- Analysis Configuration ---
 analysis:
   historical_days: 6
+  extreme_sentiment_threshold: 0.9
   sector_thresholds:
     strong_buy:
       historical: 0.6

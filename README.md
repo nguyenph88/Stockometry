@@ -9,6 +9,15 @@ Stockometry is a **two-stage financial analysis system** that combines historica
 
 The final, high-confidence prediction comes when these two things align. For example, if the Technology sector has a positive historical trend and there's a positive impact event today, the bot flags it as a strong signal and then drills down to find the specific stocks mentioned in today's news.
 
+## ☕ Support the Project
+
+If you find Stockometry helpful, consider supporting the development:
+
+[![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-Support%20nguyenph88-red?style=for-the-badge&logo=github)](https://github.com/sponsors/nguyenph88)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Support%20nguyenph88-FFDD00?style=for-the-badge&logo=buy-me-a-coffee)](https://www.buymeacoffee.com/nguyenph88)
+
+Your support helps maintain and improve Stockometry! 🚀
+
 ## Key Features
 - **11-Sector Coverage**: Technology, Healthcare, Financial Services, Consumer Discretionary, Consumer Staples, Energy, Industrials, Materials, Real Estate, Communication Services, Utilities
 - **NLP-Powered Analysis**: Uses spaCy for entity extraction and FinBERT for financial sentiment analysis
