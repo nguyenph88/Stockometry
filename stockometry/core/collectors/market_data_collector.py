@@ -15,7 +15,7 @@ def fetch_and_store_market_data():
     print(f"Fetching market data for tickers: {tickers}...")
 
     try:
-        data = yf.download(tickers, period=period, group_by='ticker')
+        data = yf.download(tickers, period=period, group_by='ticker', auto_adjust=True)
         if data.empty:
             print("No market data downloaded from yfinance.")
             return

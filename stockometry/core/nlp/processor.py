@@ -15,16 +15,27 @@ class NLPProcessor:
             print("Initializing NLP models...")
             cls._instance = super(NLPProcessor, cls).__new__(cls)
             
-            # Load spaCy for Named Entity Recognition (NER)
-            # Using disable=['parser', 'lemmatizer'] for faster loading as we only need NER
-            cls._instance.nlp = spacy.load("en_core_web_sm", disable=['parser', 'lemmatizer'])
+            try:
+                # Load spaCy for Named Entity Recognition (NER)
+                # Using disable=['parser', 'lemmatizer'] for faster loading as we only need NER
+                cls._instance.nlp = spacy.load("en_core_web_sm", disable=['parser', 'lemmatizer'])
+                print("spaCy model loaded successfully.")
+            except Exception as e:
+                print(f"Warning: Failed to load spaCy model: {e}")
+                cls._instance.nlp = None
             
-            # Load FinBERT for financial sentiment analysis
-            model_name = "ProsusAI/finbert"
-            tokenizer = AutoTokenizer.from_pretrained(model_name)
-            model = AutoModelForSequenceClassification.from_pretrained(model_name)
-            cls._instance.sentiment_pipeline = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
-            print("NLP models loaded successfully.")
+            try:
+                # Load FinBERT for financial sentiment analysis
+                model_name = "ProsusAI/finbert"
+                tokenizer = AutoTokenizer.from_pretrained(model_name)
+                model = AutoModelForSequenceClassification.from_pretrained(model_name)
+                cls._instance.sentiment_pipeline = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
+                print("FinBERT sentiment model loaded successfully.")
+            except Exception as e:
+                print(f"Warning: Failed to load FinBERT model: {e}")
+                cls._instance.sentiment_pipeline = None
+            
+            print("NLP models initialization completed.")
         return cls._instance
 
     def analyze_text(self, text: str):
@@ -33,20 +44,39 @@ class NLPProcessor:
         """
         if not text or not isinstance(text, str):
             return {"sentiment": None, "entities": []}
-            
+        
         # 1. Sentiment Analysis
-        sentiment = self.sentiment_pipeline(text)[0]
+        sentiment = None
+        if self.sentiment_pipeline:
+            try:
+                sentiment_result = self.sentiment_pipeline(text)[0]
+                sentiment = {"label": sentiment_result['label'], "score": round(sentiment_result['score'], 4)}
+            except Exception as e:
+                print(f"Warning: Sentiment analysis failed: {e}")
+                sentiment = {"label": "NEUTRAL", "score": 0.5}
+        else:
+            sentiment = {"label": "NEUTRAL", "score": 0.5}
         
         # 2. Named Entity Recognition
-        doc = self.nlp(text)
         entities = []
-        for ent in doc.ents:
-            # We are interested in organizations, people, geopolitical entities, etc.
-            if ent.label_ in ['ORG', 'PERSON', 'GPE', 'MONEY', 'PRODUCT']:
-                entities.append({'text': ent.text, 'label': ent.label_})
+        if self.nlp:
+            try:
+                doc = self.nlp(text)
+                for ent in doc.ents:
+                    # We are interested in organizations, people, geopolitical entities, etc.
+                    if ent.label_ in ['ORG', 'PERSON', 'GPE', 'MONEY', 'PRODUCT']:
+                        entities.append({'text': ent.text, 'label': ent.label_})
+            except Exception as e:
+                print(f"Warning: NER analysis failed: {e}")
+        else:
+            # Fallback: simple entity extraction
+            words = text.split()
+            for word in words:
+                if word.isupper() and len(word) > 2:
+                    entities.append({'text': word, 'label': 'ORG'})
                 
         return {
-            "sentiment": {"label": sentiment['label'], "score": round(sentiment['score'], 4)},
+            "sentiment": sentiment,
             "entities": entities
         }
 
