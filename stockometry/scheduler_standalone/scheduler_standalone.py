@@ -99,13 +99,7 @@ def start_scheduler():
         # Evening Summary (end-of-day wrap-up)
         _scheduler.add_job(run_synthesis_and_save, 'cron', hour=18, minute=15, id='evening_report_job')
         
-        # Add a heartbeat job to keep scheduler alive
-        _scheduler.add_job(
-            lambda: logger.info("Scheduler heartbeat - keeping alive"), 
-            'interval', 
-            minutes=5, 
-            id='heartbeat'
-        )
+
         
         # Start the background scheduler (non-blocking)
         _scheduler.start()
