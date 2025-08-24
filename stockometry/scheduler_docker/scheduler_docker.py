@@ -153,16 +153,6 @@ class SchedulerDocker:
             )
             print("Scheduler Docker: Added Final Report Generation job (daily at 2:30 AM)")
             
-            # Heartbeat job to keep scheduler alive in Docker
-            self._scheduler.add_job(
-                self._heartbeat,
-                'interval',
-                minutes=5,
-                id='scheduler_docker_heartbeat',
-                name='Scheduler Heartbeat'
-            )
-            print("Scheduler Docker: Added Heartbeat job (every 5 minutes)")
-            
             print("Scheduler Docker: All scheduled jobs added successfully")
             logger.info("All scheduled jobs added successfully")
             
@@ -199,11 +189,6 @@ class SchedulerDocker:
             print(f"Scheduler Docker: Error in scheduled synthesis job - {str(e)}")
             logger.error(f"Error in Scheduler Docker scheduled synthesis job: {str(e)}")
             raise
-    
-    def _heartbeat(self):
-        """Heartbeat function to keep scheduler alive in Docker"""
-        print("Scheduler Docker: Heartbeat - keeping alive")
-        logger.info("Scheduler Docker heartbeat - keeping alive")
     
     def stop(self):
         """Stop the Docker scheduler"""
