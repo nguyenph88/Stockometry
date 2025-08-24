@@ -2,19 +2,17 @@
 """
 Stockometry CLI - Run Once
 Standalone script to run the complete Stockometry pipeline once.
-Equivalent to the original run_once.py but using the new modular structure.
 """
 
 import sys
 import logging
 from ..core import run_stockometry_analysis
 
-# Configure logging with proper encoding for Windows compatibility
+# Configure logging with console output only
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('rune_once.log', encoding='utf-8'),
         logging.StreamHandler(sys.stdout)
     ]
 )
@@ -82,4 +80,4 @@ if __name__ == '__main__':
         print("\nProduction run interrupted by user")
     except Exception as e:
         print(f"\nUnexpected error: {e}")
-        print("Check 'rune_once.log' for detailed error information")
+        print("Check console output for detailed error information")
