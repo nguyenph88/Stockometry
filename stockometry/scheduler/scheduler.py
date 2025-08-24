@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 # Global scheduler instance for API control
 _scheduler = None
 _scheduler_running = False
+_scheduler_thread = None  # Keep reference to prevent garbage collection
 
 def shutdown_scheduler():
     """Graceful shutdown for Docker environments"""
@@ -32,6 +33,30 @@ def shutdown_scheduler():
     
     return {"status": "shutdown", "message": "Scheduler shutdown complete"}
 
+def restart_scheduler():
+    """Restart the scheduler if it has died"""
+    global _scheduler, _scheduler_running
+    
+    try:
+        # Check if scheduler is actually running
+        if _scheduler and _scheduler.running:
+            logger.info("Scheduler is already running, no restart needed")
+            return {"status": "already_running", "message": "Scheduler is already running"}
+        
+        # If scheduler died, reset state and restart
+        if _scheduler_running and (not _scheduler or not _scheduler.running):
+            logger.warning("Scheduler appears to have died, restarting...")
+            _scheduler_running = False
+            _scheduler = None
+            _scheduler_thread = None
+        
+        # Start fresh
+        return start_scheduler()
+        
+    except Exception as e:
+        logger.error(f"Failed to restart scheduler: {str(e)}")
+        return {"status": "error", "message": f"Failed to restart scheduler: {str(e)}"}
+
 def start_scheduler():
     """Start the Stockometry scheduler"""
     global _scheduler, _scheduler_running
@@ -44,14 +69,19 @@ def start_scheduler():
         
         # Configure thread pool for background execution
         executors = {
-            'default': ThreadPoolExecutor(max_workers=4)
+            'default': ThreadPoolExecutor(max_workers=4, thread_name_prefix="stockometry_scheduler")
         }
         
-        # Use BackgroundScheduler for Docker compatibility
+        # Use BackgroundScheduler for Docker compatibility with better configuration
         _scheduler = BackgroundScheduler(
             timezone="UTC",
             executors=executors,
-            job_defaults={'coalesce': False, 'max_instances': 1}
+            job_defaults={
+                'coalesce': False, 
+                'max_instances': 1,
+                'misfire_grace_time': 300  # 5 minutes grace time for missed jobs
+            },
+            daemon=False  # Don't make it a daemon thread in Docker
         )
         
         # --- Data Collection & Processing Jobs ---
@@ -62,11 +92,24 @@ def start_scheduler():
         # --- Final Synthesis & Output Job ---
         _scheduler.add_job(run_synthesis_and_save, 'cron', hour=2, minute=30, id='final_report_job')
         
+        # Add a heartbeat job to keep scheduler alive
+        _scheduler.add_job(
+            lambda: logger.info("Scheduler heartbeat - keeping alive"), 
+            'interval', 
+            minutes=5, 
+            id='heartbeat'
+        )
+        
         # Start the background scheduler (non-blocking)
         _scheduler.start()
         _scheduler_running = True
         
+        # Keep a reference to prevent garbage collection in Docker
+        global _scheduler_thread
+        _scheduler_thread = _scheduler
+        
         logger.info("Scheduler started successfully in background mode")
+        logger.info(f"Active jobs: {len(_scheduler.get_jobs())}")
         return {"status": "started", "message": "Scheduler started successfully in background mode"}
     except Exception as e:
         logger.error(f"Failed to start scheduler: {str(e)}")
@@ -74,14 +117,16 @@ def start_scheduler():
 
 def stop_scheduler():
     """Stop the Stockometry scheduler"""
-    global _scheduler, _scheduler_running
+    global _scheduler, _scheduler_running, _scheduler_thread
     
     if not _scheduler_running or not _scheduler:
         return {"status": "not_running", "message": "Scheduler is not running"}
     
     try:
+        logger.info("Stopping scheduler...")
         _scheduler.shutdown(wait=False)  # Don't wait for jobs to complete
         _scheduler = None
+        _scheduler_thread = None
         _scheduler_running = False
         
         logger.info("Scheduler stopped successfully")
@@ -92,12 +137,20 @@ def stop_scheduler():
 
 def get_scheduler_status():
     """Get current scheduler status"""
-    global _scheduler, _scheduler_running
+    global _scheduler, _scheduler_running, _scheduler_thread
     
+    # Check if scheduler exists and is running
     if not _scheduler_running or not _scheduler:
+        logger.info("Scheduler status check: Not running")
         return {"status": "stopped", "running": False}
     
     try:
+        # Verify scheduler is actually running
+        if not _scheduler.running:
+            logger.warning("Scheduler marked as running but not actually running")
+            _scheduler_running = False
+            return {"status": "stopped", "running": False, "error": "Scheduler thread died"}
+        
         jobs = _scheduler.get_jobs()
         job_info = []
         for job in jobs:
@@ -116,6 +169,10 @@ def get_scheduler_status():
         }
     except Exception as e:
         logger.error(f"Error getting scheduler status: {str(e)}")
+        # Reset state if scheduler is broken
+        _scheduler_running = False
+        _scheduler = None
+        _scheduler_thread = None
         return {
             "status": "error",
             "running": False,

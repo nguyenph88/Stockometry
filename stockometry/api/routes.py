@@ -13,7 +13,7 @@ from ..core.analysis.historical_analyzer import analyze_historical_trends
 from ..core.output.processor import OutputProcessor
 from ..database import get_db_connection, init_db
 from ..config import settings
-from ..scheduler.scheduler import start_scheduler as start_sched, stop_scheduler as stop_sched, get_scheduler_status as get_sched_status
+from ..scheduler.scheduler import start_scheduler as start_sched, stop_scheduler as stop_sched, get_scheduler_status as get_sched_status, restart_scheduler as restart_sched
 
 # Create the router at module level
 router = APIRouter(prefix="/stockometry", tags=["stockometry"])
@@ -470,6 +470,28 @@ async def stop_scheduler():
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to stop scheduler: {str(e)}")
+
+@router.post("/scheduler/restart", response_model=SchedulerResponse)
+async def restart_scheduler():
+    """
+    Restart the Stockometry scheduler if it has died
+    """
+    try:
+        result = restart_sched()
+        if result["status"] == "started":
+            return SchedulerResponse(
+                message="Scheduler restarted successfully",
+                status="running"
+            )
+        elif result["status"] == "already_running":
+            return SchedulerResponse(
+                message="Scheduler is already running",
+                status="running"
+            )
+        else:
+            raise HTTPException(status_code=500, detail=f"Failed to restart scheduler: {result['message']}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to restart scheduler: {str(e)}")
 
 @router.get("/scheduler/status")
 async def get_scheduler_status():

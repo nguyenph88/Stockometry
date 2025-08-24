@@ -9,7 +9,8 @@ from .scheduler import (
     start_scheduler, 
     stop_scheduler, 
     get_scheduler_status,
-    shutdown_scheduler
+    shutdown_scheduler,
+    restart_scheduler
 )
 
 __all__ = [
@@ -18,5 +19,6 @@ __all__ = [
     'start_scheduler', 
     'stop_scheduler', 
     'get_scheduler_status',
-    'shutdown_scheduler'
+    'shutdown_scheduler',
+    'restart_scheduler'
 ]
