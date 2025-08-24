@@ -5,6 +5,76 @@ All notable changes to Stockometry will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2025-01-23
+
+### 🚀 Major Features
+- **Docker Scheduler Service**: New independent scheduler service designed specifically for Docker containers
+- **Service Separation**: Complete separation of scheduling logic from main FastAPI application
+- **Container-Optimized Architecture**: Dedicated service running on port 8005 with minimal resource usage
+
+### 🐳 Docker & Containerization
+- **New Package**: `stockometry.scheduler_docker` - Independent scheduler package
+- **Container Service**: `SchedulerDocker` class with Docker-specific optimizations
+- **Port Configuration**: Dedicated service running on port 8005 (separate from main app on 8000)
+- **Docker Compose**: Complete orchestration setup for multi-service deployment
+- **Health Checks**: Built-in health monitoring and container lifecycle management
+
+### 🔧 Architecture Improvements
+- **Service Decoupling**: Main FastAPI app no longer handles scheduling operations
+- **Clean API**: Removed all scheduler endpoints from main application routes
+- **Single-Threaded Design**: Simplified scheduler using single thread instead of thread pool
+- **Environment Awareness**: Automatic database selection based on `settings.yml` environment
+- **Modern FastAPI**: Updated to use lifespan event handlers (replacing deprecated on_event)
+
+### 📊 Scheduling Logic
+- **News Collection**: Hourly news fetching (every hour)
+- **Market Data**: Daily collection at 1:00 AM UTC
+- **NLP Processing**: Hourly processing at 5 minutes past each hour (aligned with news collection)
+- **Report Generation**: Daily synthesis at 2:30 AM UTC
+- **Heartbeat**: 5-minute intervals to maintain container health
+
+### 🗄️ Database & Configuration
+- **Environment Respect**: Automatically uses staging vs production database based on settings
+- **Database Initialization**: Automatic table creation with environment-aware database selection
+- **Run Source Tracking**: All scheduled reports marked with "SCHEDULER_DOCKER" source
+- **Connection Management**: Optimized for containerized database connections
+
+### 🔌 API Endpoints (Docker Scheduler Service)
+- **Service Control**: `/start`, `/stop`, `/restart` - Scheduler lifecycle management
+- **Status Monitoring**: `/status`, `/health` - Service health and job status
+- **Job Information**: `/jobs` - Detailed scheduled job information
+- **Root Info**: `/` - Service information and available endpoints
+
+### 🧹 Code Cleanup
+- **Removed Scheduler Routes**: Cleaned up main API routes to focus on business logic
+- **Package Cleanup**: Removed scheduler imports from main package `__init__.py`
+- **Logging Simplification**: Removed file logging from `run_once.py` (console only)
+- **Deprecation Fixes**: Updated FastAPI event handlers to modern lifespan approach
+
+### 📁 New File Structure
+- **New Package**: `stockometry/scheduler_docker/`
+  - `__init__.py` - Package initialization
+  - `scheduler_docker.py` - Core scheduler logic
+  - `main.py` - FastAPI application with lifespan events
+  - `requirements.txt` - Service dependencies
+  - `Dockerfile` - Container build instructions
+  - `docker-compose.yml` - Multi-service orchestration
+  - `README.md` - Service documentation
+  - `test_scheduler.py` - Standalone testing script
+
+### 🗑️ Removed Features
+- **Main App Scheduler**: All scheduler control endpoints removed from main API
+- **Thread Pool**: Replaced 4-worker thread pool with single-threaded execution
+- **File Logging**: Removed `.log` file generation from CLI tools
+- **Deprecated FastAPI**: Replaced deprecated `on_event` with modern lifespan handlers
+
+### 📚 Documentation Updates
+- **Docker Scheduler README**: Comprehensive service documentation
+- **API Cleanup**: Updated main API documentation to reflect removed scheduler endpoints
+- **Service Architecture**: Clear separation between main app and scheduler service
+
+---
+
 ## [2.1.0] - 2025-08-22
 
 ### 🐛 Bug Fixes & Improvements
