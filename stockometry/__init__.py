@@ -35,6 +35,9 @@ from .utils.export_reports import (
 
 from .utils.get_individual_reports import fetch_independent_analyses
 
+# Backfill system
+from .backfill import BackfillManager, ReportAnalyzer
+
 # Test modules
 from .tests import (
     test_setup,
@@ -68,6 +71,10 @@ __all__ = [
     'export_report_by_id',
     'list_available_reports',
     'fetch_independent_analyses',
+    
+    # Backfill
+    'BackfillManager',
+    'ReportAnalyzer',
     
     # Tests
     'test_setup',
