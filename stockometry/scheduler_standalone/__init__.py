@@ -3,7 +3,7 @@ Scheduler module for Stockometry.
 Provides scheduled data collection and analysis functionality.
 """
 
-from .scheduler import (
+from .scheduler_standalone import (
     main, 
     run_synthesis_and_save, 
     start_scheduler, 

@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # Main Stockometry FastAPI application
+  stockometry-main:
+    build:
+      context: ../..  # Build from the root Stockometry directory
+      dockerfile: stockometry/scheduler_docker/Dockerfile.main
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - API_KEY=${API_KEY}
+      # Add other environment variables as needed
+    volumes:
+      - ./data:/app/data
+    networks:
+      - stockometry-network
+    restart: unless-stopped
+
+  # Scheduler Docker Service
+  stockometry-scheduler-docker:
+    build:
+      context: ../..  # Build from the root Stockometry directory
+      dockerfile: stockometry/scheduler_docker/Dockerfile
+    ports:
+      - "8005:8005"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - SCHEDULER_ENV=scheduler_docker
+      # Add other environment variables as needed
+    volumes:
+      - ./data:/app/data
+    networks:
+      - stockometry-network
+    restart: unless-stopped
+    depends_on:
+      - stockometry-main
+
+  # Database (if you need one)
+  # postgres:
+  #   image: postgres:15
+  #   environment:
+  #     - POSTGRES_DB=stockometry
+  #     - POSTGRES_USER=stockometry
+  #     - POSTGRES_PASSWORD=${DB_PASSWORD}
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   networks:
+  #     - stockometry-network
+  #   restart: unless-stopped
+
+networks:
+  stockometry-network:
+    driver: bridge
+
+volumes:
+  # postgres_data:  # Uncomment if using database service
