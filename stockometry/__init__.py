@@ -6,7 +6,6 @@ This package provides:
 - CLI tools for standalone operation
 - FastAPI integration
 - Database management
-- Scheduled analysis
 - Utility functions
 - Comprehensive documentation
 """
@@ -25,15 +24,6 @@ from .api import router as api_router
 
 # Database utilities
 from .database import get_db_connection, get_db_connection_string, init_db
-
-# Scheduler functionality (separate from CLI scheduler)
-from .scheduler.scheduler import (
-    main as run_scheduler, 
-    run_synthesis_and_save,
-    start_scheduler as start_sched,
-    stop_scheduler as stop_sched,
-    get_scheduler_status
-)
 
 # Utility functions
 from .utils.export_reports import (
@@ -71,13 +61,6 @@ __all__ = [
     'get_db_connection',
     'get_db_connection_string',
     'init_db',
-    
-    # Scheduler
-    'run_scheduler',
-    'run_synthesis_and_save',
-    'start_sched',
-    'stop_sched',
-    'get_scheduler_status',
     
     # Utilities
     'export_latest_report',

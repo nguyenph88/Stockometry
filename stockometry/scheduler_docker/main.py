@@ -8,6 +8,7 @@ to control it. It's designed to run in a separate container.
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 import uvicorn
 import logging
 import signal
@@ -20,30 +21,13 @@ from .scheduler_docker import SchedulerDocker
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Create FastAPI app
-app = FastAPI(
-    title="Stockometry Scheduler Docker",
-    description="Docker-optimized scheduler service for Stockometry",
-    version="1.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc"
-)
-
-# Add CORS middleware for Docker container communication
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Configure as needed for your Docker setup
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # Global scheduler instance
 scheduler_docker = SchedulerDocker()
 
-@app.on_event("startup")
-async def startup_event():
-    """Startup event - initialize the Docker scheduler"""
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan event handler for startup and shutdown"""
+    # Startup
     logger.info("Starting Stockometry Scheduler Docker Service...")
     try:
         # Auto-start the scheduler on container startup
@@ -54,16 +38,35 @@ async def startup_event():
             logger.warning(f"Scheduler Docker auto-start result: {result}")
     except Exception as e:
         logger.error(f"Failed to auto-start Scheduler Docker: {str(e)}")
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Shutdown event - gracefully stop the scheduler"""
+    
+    yield
+    
+    # Shutdown
     logger.info("Shutting down Stockometry Scheduler Docker Service...")
     try:
         scheduler_docker.stop()
         logger.info("Scheduler Docker stopped gracefully")
     except Exception as e:
         logger.error(f"Error during Scheduler Docker shutdown: {str(e)}")
+
+# Create FastAPI app with lifespan
+app = FastAPI(
+    title="Stockometry Scheduler Docker",
+    description="Docker-optimized scheduler service for Stockometry",
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    lifespan=lifespan
+)
+
+# Add CORS middleware for Docker container communication
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Configure as needed for your Docker setup
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Signal handlers for graceful shutdown in Docker
 def signal_handler(signum, frame):
