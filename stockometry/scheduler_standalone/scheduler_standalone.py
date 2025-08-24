@@ -89,8 +89,15 @@ def start_scheduler():
         _scheduler.add_job(fetch_and_store_market_data, 'cron', hour=1, minute=0, id='market_data_fetcher')
         _scheduler.add_job(process_articles_and_store_features, 'interval', minutes=15, id='nlp_processor')
         
-        # --- Final Synthesis & Output Job ---
-        _scheduler.add_job(run_synthesis_and_save, 'cron', hour=2, minute=30, id='final_report_job')
+        # --- Final Synthesis & Output Jobs - 3 times daily for fresher insights ---
+        # Morning Report (full daily analysis)
+        _scheduler.add_job(run_synthesis_and_save, 'cron', hour=2, minute=15, id='morning_report_job')
+        
+        # Midday Update (quick refresh with new news/NLP data)
+        _scheduler.add_job(run_synthesis_and_save, 'cron', hour=10, minute=15, id='midday_report_job')
+        
+        # Evening Summary (end-of-day wrap-up)
+        _scheduler.add_job(run_synthesis_and_save, 'cron', hour=18, minute=15, id='evening_report_job')
         
         # Add a heartbeat job to keep scheduler alive
         _scheduler.add_job(

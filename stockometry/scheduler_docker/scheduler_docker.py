@@ -142,16 +142,39 @@ class SchedulerDocker:
             )
             print("Scheduler Docker: Added NLP Processing job (every hour at 5 minutes past)")
             
-            # Final Synthesis Job
+            # Final Synthesis Jobs - 3 times daily for fresher insights
+            # Morning Report (full daily analysis)
             self._scheduler.add_job(
                 self._run_synthesis_and_save,
                 'cron',
                 hour=2,
-                minute=30,
-                id='scheduler_docker_final_report_job',
-                name='Final Report Generation'
+                minute=15,
+                id='scheduler_docker_morning_report_job',
+                name='Morning Report Generation'
             )
-            print("Scheduler Docker: Added Final Report Generation job (daily at 2:30 AM)")
+            print("Scheduler Docker: Added Morning Report Generation job (daily at 2:15 AM)")
+            
+            # Midday Update (quick refresh with new news/NLP data)
+            self._scheduler.add_job(
+                self._run_synthesis_and_save,
+                'cron',
+                hour=10,
+                minute=15,
+                id='scheduler_docker_midday_report_job',
+                name='Midday Report Update'
+            )
+            print("Scheduler Docker: Added Midday Report Update job (daily at 10:15 AM)")
+            
+            # Evening Summary (end-of-day wrap-up)
+            self._scheduler.add_job(
+                self._run_synthesis_and_save,
+                'cron',
+                hour=18,
+                minute=15,
+                id='scheduler_docker_evening_report_job',
+                name='Evening Report Summary'
+            )
+            print("Scheduler Docker: Added Evening Report Summary job (daily at 6:15 PM)")
             
             print("Scheduler Docker: All scheduled jobs added successfully")
             logger.info("All scheduled jobs added successfully")

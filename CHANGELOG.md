@@ -5,6 +5,33 @@ All notable changes to Stockometry will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2025-01-23
+
+### 🚀 Major Features
+- **Enhanced Daily Reporting**: Upgraded from once-daily to 3-times daily report generation for fresher market insights
+- **Improved User Experience**: Users now receive market intelligence throughout the trading day instead of waiting 24 hours
+- **Strategic Timing**: Reports generated at optimal times for different market sessions and user needs
+
+### 📊 Enhanced Scheduling Logic
+- **Morning Report**: 2:15 AM UTC - Full daily analysis with overnight data and early market insights
+- **Midday Update**: 10:15 AM UTC - Quick refresh capturing breaking news and intraday developments
+- **Evening Summary**: 6:15 PM UTC - End-of-day wrap-up with complete daily market picture
+- **Consistent Timing**: All schedulers (Docker and standalone) now use identical 15-minute offset timing
+
+### 🔄 Scheduler Updates
+- **Docker Scheduler**: Updated `scheduler_docker.py` with new 3-times daily configuration
+- **Standalone Scheduler**: Updated `scheduler_standalone.py` to match Docker scheduler timing
+- **Unified Approach**: Both schedulers now provide the same enhanced user experience
+- **Backward Compatibility**: All existing functionality preserved, only scheduling frequency enhanced
+
+### 📈 Business Value
+- **Fresher Intelligence**: Breaking news and market developments captured within hours instead of days
+- **Better Coverage**: Intraday trends and emerging patterns detected earlier
+- **User Engagement**: More frequent updates keep users engaged and informed throughout the day
+- **Competitive Advantage**: Faster market intelligence delivery compared to daily-only systems
+
+---
+
 ## [2.2.0] - 2025-01-23
 
 ### 🚀 Major Features
