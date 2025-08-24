@@ -9,7 +9,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.executors.pool import ThreadPoolExecutor
 from stockometry.database import init_db
 from stockometry.core.collectors.news_collector import fetch_and_store_news
-from stockometry.core.core.collectors.market_data_collector import fetch_and_store_market_data
+from stockometry.core.collectors.market_data_collector import fetch_and_store_market_data
 from stockometry.core.nlp.processor import process_articles_and_store_features
 from stockometry.core.analysis.synthesizer import synthesize_analyses
 from stockometry.core.output.processor import OutputProcessor
@@ -39,10 +39,13 @@ class SchedulerDocker:
         self._initialized = False
         
     def _ensure_db_initialized(self):
-        """Initialize database if not already done"""
+        """Initialize database if not already done - respects environment from settings.yml"""
         if not self._initialized:
             try:
-                logger.info("Initializing database for Docker scheduler...")
+                logger.info("Initializing database for Scheduler Docker...")
+                # This will automatically use the correct database based on environment in settings.yml
+                # - If environment=staging: uses stockometry_staging
+                # - If environment=production: uses stockometry
                 init_db()
                 self._initialized = True
                 logger.info("Database initialization complete")
@@ -55,11 +58,11 @@ class SchedulerDocker:
         if self._running:
             return {
                 "status": "already_running",
-                "message": "Docker scheduler is already running"
+                "message": "Scheduler Docker is already running"
             }
         
         try:
-            # Ensure database is initialized
+            # Ensure database is initialized (respects environment from settings.yml)
             self._ensure_db_initialized()
             
             # Configure thread pool for Docker environment
@@ -89,20 +92,20 @@ class SchedulerDocker:
             self._scheduler.start()
             self._running = True
             
-            logger.info("Docker scheduler started successfully")
+            logger.info("Scheduler Docker started successfully")
             logger.info(f"Active jobs: {len(self._scheduler.get_jobs())}")
             
             return {
                 "status": "started",
-                "message": "Docker scheduler started successfully",
+                "message": "Scheduler Docker started successfully",
                 "jobs_count": len(self._scheduler.get_jobs())
             }
             
         except Exception as e:
-            logger.error(f"Failed to start Docker scheduler: {str(e)}")
+            logger.error(f"Failed to start Scheduler Docker: {str(e)}")
             return {
                 "status": "error",
-                "message": f"Failed to start Docker scheduler: {str(e)}"
+                "message": f"Failed to start Scheduler Docker: {str(e)}"
             }
     
     def _add_scheduled_jobs(self):
@@ -192,32 +195,32 @@ class SchedulerDocker:
         if not self._running or not self._scheduler:
             return {
                 "status": "not_running",
-                "message": "Docker scheduler is not running"
+                "message": "Scheduler Docker is not running"
             }
         
         try:
-            logger.info("Stopping Docker scheduler...")
+            logger.info("Stopping Scheduler Docker...")
             self._scheduler.shutdown(wait=False)
             self._scheduler = None
             self._running = False
             
-            logger.info("Docker scheduler stopped successfully")
+            logger.info("Scheduler Docker stopped successfully")
             return {
                 "status": "stopped",
-                "message": "Docker scheduler stopped successfully"
+                "message": "Scheduler Docker stopped successfully"
             }
             
         except Exception as e:
-            logger.error(f"Failed to stop Docker scheduler: {str(e)}")
+            logger.error(f"Failed to stop Scheduler Docker: {str(e)}")
             return {
                 "status": "error",
-                "message": f"Failed to stop Docker scheduler: {str(e)}"
+                "message": f"Failed to stop Scheduler Docker: {str(e)}"
             }
     
     def restart(self):
         """Restart the Docker scheduler"""
         try:
-            logger.info("Restarting Docker scheduler...")
+            logger.info("Restarting Scheduler Docker...")
             stop_result = self.stop()
             if stop_result["status"] in ["stopped", "not_running"]:
                 return self.start()
@@ -227,10 +230,10 @@ class SchedulerDocker:
                     "message": f"Failed to stop scheduler before restart: {stop_result['message']}"
                 }
         except Exception as e:
-            logger.error(f"Failed to restart Docker scheduler: {str(e)}")
+            logger.error(f"Failed to restart Scheduler Docker: {str(e)}")
             return {
                 "status": "error",
-                "message": f"Failed to restart Docker scheduler: {str(e)}"
+                "message": f"Failed to restart Scheduler Docker: {str(e)}"
             }
     
     def get_status(self):
@@ -245,7 +248,7 @@ class SchedulerDocker:
         try:
             # Verify scheduler is actually running
             if not self._scheduler.running:
-                logger.warning("Docker scheduler marked as running but not actually running")
+                logger.warning("Scheduler Docker marked as running but not actually running")
                 self._running = False
                 return {
                     "status": "stopped",
@@ -273,7 +276,7 @@ class SchedulerDocker:
             }
             
         except Exception as e:
-            logger.error(f"Error getting Docker scheduler status: {str(e)}")
+            logger.error(f"Error getting Scheduler Docker status: {str(e)}")
             self._running = False
             self._scheduler = None
             return {
