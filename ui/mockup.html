@@ -7,6 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <!-- Tooltip Libraries -->
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -26,8 +29,33 @@
         .signal-card:hover {
             transform: translateY(-4px);
         }
-        .modal-backdrop {
-            transition: opacity 0.3s ease;
+        .gauge-bg {
+            fill: none;
+            stroke-width: 8;
+        }
+        .gauge-fg {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+            transform: rotate(-90deg 50 50);
+            transition: stroke-dashoffset 0.5s ease-in-out;
+        }
+        /* Custom Tippy.js Theme */
+        .tippy-box[data-theme~='stockometry'] {
+            background-color: #1e293b;
+            color: #d1d5db;
+            border: 1px solid #334155;
+        }
+        .tippy-box[data-theme~='stockometry'][data-placement^='top'] > .tippy-arrow::before {
+            border-top-color: #1e293b;
+        }
+        html:not(.dark) .tippy-box[data-theme~='stockometry'] {
+             background-color: #ffffff;
+             color: #374151;
+             border: 1px solid #e5e7eb;
+        }
+        html:not(.dark) .tippy-box[data-theme~='stockometry'][data-placement^='top'] > .tippy-arrow::before {
+            border-top-color: #ffffff;
         }
     </style>
     <script>
@@ -65,11 +93,54 @@
                      <p class="font-semibold text-slate-700 dark:text-gray-300">11:49 AM PDT</p>
                 </div>
                 <button id="theme-toggle" class="p-2 rounded-full bg-slate-200 dark:bg-gray-800 text-slate-800 dark:text-gray-300 hover:bg-slate-300 dark:hover:bg-gray-700 transition-colors">
-                    <svg id="theme-icon-sun" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                    <svg id="theme-icon-moon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                    <svg id="theme-icon-sun" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <svg id="theme-icon-moon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
                 </button>
             </div>
         </header>
+
+        <!-- Market Vitals Section -->
+        <section id="vitals" class="mb-10">
+             <h2 class="text-2xl font-bold mb-4 text-slate-900 dark:text-white">Market Vitals</h2>
+             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- S&P 500 Card -->
+                <div class="bg-white dark:bg-gray-850 p-4 rounded-xl border border-slate-200 dark:border-gray-700">
+                    <p class="font-semibold text-gray-500 dark:text-gray-400">S&P 500</p>
+                    <div class="flex items-baseline mt-1">
+                        <p class="text-2xl font-bold text-slate-900 dark:text-white">4,532.80</p>
+                        <p class="ml-2 text-green-600 dark:text-green-400 font-semibold">+25.40 (+0.56%)</p>
+                    </div>
+                </div>
+                <!-- NASDAQ Card -->
+                <div class="bg-white dark:bg-gray-850 p-4 rounded-xl border border-slate-200 dark:border-gray-700">
+                    <p class="font-semibold text-gray-500 dark:text-gray-400">NASDAQ</p>
+                    <div class="flex items-baseline mt-1">
+                        <p class="text-2xl font-bold text-slate-900 dark:text-white">14,210.50</p>
+                        <p class="ml-2 text-green-600 dark:text-green-400 font-semibold">+150.12 (+1.07%)</p>
+                    </div>
+                </div>
+                <!-- VIX Card -->
+                <div class="bg-white dark:bg-gray-850 p-4 rounded-xl border border-slate-200 dark:border-gray-700">
+                    <p class="font-semibold text-gray-500 dark:text-gray-400">VIX (Fear Index)</p>
+                    <div class="flex items-baseline mt-1">
+                        <p class="text-2xl font-bold text-slate-900 dark:text-white">15.80</p>
+                        <p class="ml-2 text-green-600 dark:text-green-400 font-semibold">-0.95 (-5.67%)</p>
+                    </div>
+                </div>
+                <!-- Economic Events Card -->
+                <div class="bg-white dark:bg-gray-850 p-4 rounded-xl border border-slate-200 dark:border-gray-700">
+                    <p class="font-semibold text-gray-500 dark:text-gray-400">Upcoming Events</p>
+                    <div class="flex items-baseline mt-1">
+                        <p class="text-lg font-bold text-slate-900 dark:text-white">CPI Report</p>
+                        <p class="ml-auto text-gray-500 dark:text-gray-400 font-semibold">Tomorrow</p>
+                    </div>
+                </div>
+             </div>
+        </section>
 
         <!-- Main Content Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -77,37 +148,47 @@
             <!-- Left Column: Actionable Signals -->
             <div class="lg:col-span-2 space-y-8">
                 
+                <!-- Section 2: High-Confidence Signals -->
                 <section id="signals">
                     <h2 class="text-2xl font-bold mb-4 text-slate-900 dark:text-white">Today's High-Confidence Signals</h2>
                     <div class="space-y-6">
+                        <!-- Bullish Signal Card -->
                         <div class="signal-card bg-white dark:bg-gradient-to-br from-gray-850 to-gray-900 rounded-xl shadow-md dark:shadow-lg border border-slate-200 dark:border-gray-700">
                             <div class="p-6">
-                                <div class="flex items-start justify-between">
-                                    <div>
-                                        <span class="text-sm font-semibold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/50 px-3 py-1 rounded-full border border-green-200 dark:border-green-700">HIGH-CONFIDENCE BULLISH</span>
-                                        <a href="#" class="block text-3xl font-bold mt-2 text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Technology Sector</a>
-                                    </div>
-                                    <div class="p-3 bg-slate-100 dark:bg-gray-800 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg></div>
+                                <div class="flex space-x-6">
+                                    <div class="flex-shrink-0"><div class="relative w-24 h-24"><svg class="w-full h-full" viewBox="0 0 100 100"><circle class="gauge-bg stroke-gray-300 dark:stroke-gray-600" cx="50" cy="50" r="42"></circle><circle class="gauge-fg stroke-green-500 dark:stroke-green-400" cx="50" cy="50" r="42" style="stroke-dasharray: 264; stroke-dashoffset: 52.8;"></circle></svg><div class="absolute inset-0 flex flex-col items-center justify-center"><span class="text-2xl font-bold text-green-500 dark:text-green-400">80%</span><span class="text-xs text-gray-500 dark:text-gray-400">Strength</span></div></div></div>
+                                    <div class="flex-grow"><span class="text-sm font-semibold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/50 px-3 py-1 rounded-full border border-green-200 dark:border-green-700">HIGH-CONFIDENCE BULLISH</span><h3 class="text-3xl font-bold mt-2 text-slate-900 dark:text-white">Technology Sector</h3><div class="mt-2 flex items-center space-x-2"><div class="flex items-center space-x-1"><span class="w-2.5 h-2.5 bg-gray-300 dark:bg-gray-600 rounded-full" title="Aug 19: No Signal"></span><span class="w-2.5 h-2.5 bg-gray-300 dark:bg-gray-600 rounded-full" title="Aug 20: No Signal"></span><span class="w-2.5 h-2.5 bg-green-500 dark:bg-green-400 rounded-full" title="Aug 21: Bullish Signal"></span><span class="w-2.5 h-2.5 bg-green-500 dark:bg-green-400 rounded-full" title="Aug 22: Bullish Signal"></span></div><span class="text-xs font-semibold text-green-600 dark:text-green-400">2-Day Signal Streak</span></div></div>
                                 </div>
-                                <div class="mt-6">
-                                    <h4 class="font-semibold text-gray-600 dark:text-gray-400">Predicted Top Mover:</h4>
-                                    <div class="mt-2 p-4 bg-slate-50 dark:bg-gray-850 rounded-lg border border-slate-200 dark:border-gray-700">
-                                        <p class="text-lg font-bold text-slate-900 dark:text-white">MSFT (Microsoft Corp.)</p>
-                                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Triggered by news: <a href="#" class="text-blue-600 dark:text-blue-400 hover:underline">'Microsoft Unveils New AI Chip in Major Deal'</a> (Sentiment Score: 0.98)</p>
-                                    </div>
-                                </div>
+                                <div class="mt-6"><h4 class="font-semibold text-gray-600 dark:text-gray-400">Key Stocks to Watch:</h4><div class="mt-2 space-y-2"><div class="p-3 bg-slate-50 dark:bg-gray-850 rounded-lg border border-slate-200 dark:border-gray-700"><p class="font-bold text-slate-900 dark:text-white">MSFT</p><p class="text-sm text-gray-500 dark:text-gray-400">Triggered by news: <a href="#" class="article-link text-blue-600 dark:text-blue-400 hover:underline" data-tippy-content="<div class='p-2 text-left'><strong class='block'>Microsoft Unveils New AI Chip in Major Deal</strong><p class='mt-1 text-xs'>The new chip promises to double the performance for AI workloads, positioning Microsoft to compete directly with other major players in the semiconductor space.</p></div>">'Microsoft Unveils New AI Chip...'</a></p></div><div class="p-3 bg-slate-50 dark:bg-gray-850 rounded-lg border border-slate-200 dark:border-gray-700"><p class="font-bold text-slate-900 dark:text-white">NVDA</p><p class="text-sm text-gray-500 dark:text-gray-400">Mentioned in: <a href="#" class="article-link text-blue-600 dark:text-blue-400 hover:underline" data-tippy-content="<div class='p-2 text-left'><strong class='block'>AI Chip Race Heats Up as Tech Giants Compete</strong><p class='mt-1 text-xs'>Analysts weigh in on the competitive landscape following recent announcements, with Nvidia still seen as the market leader.</p></div>">'AI Chip Race Heats Up...'</a></p></div></div></div>
+                                <div class="mt-6 pt-4 border-t border-slate-200 dark:border-gray-700"><h4 class="font-semibold text-gray-600 dark:text-gray-400">Evidence</h4><div class="mt-2 space-y-4 text-sm"><div><h5 class="font-bold text-slate-800 dark:text-gray-200">Today's Catalyst</h5><ul class="mt-1 list-disc list-inside space-y-1"><li><a href="#" class="article-link text-blue-600 dark:text-blue-400 hover:underline" data-tippy-content="<div class='p-2 text-left'><strong class='block'>Microsoft Unveils New AI Chip in Major Deal</strong><p class='mt-1 text-xs'>The new chip promises to double the performance for AI workloads, positioning Microsoft to compete directly with other major players in the semiconductor space.</p></div>">Microsoft Unveils New AI Chip in Major Deal</a><span class="ml-2 text-gray-400 dark:text-gray-500">(Aug 21)</span></li></ul></div><div><h5 class="font-bold text-slate-800 dark:text-gray-200">Historical Trend Evidence (Last 6 Days)</h5><ul class="mt-1 list-disc list-inside space-y-1"><li><a href="#" class="article-link text-blue-600 dark:text-blue-400 hover:underline" data-tippy-content="<div class='p-2 text-left'><strong class='block'>Apple Reports Strong iPhone Sales in Europe</strong><p class='mt-1 text-xs'>Positive sales data from the European market points to sustained demand for Apple's flagship product.</p></div>">Apple Reports Strong iPhone Sales in Europe</a><span class="ml-2 text-gray-400 dark:text-gray-500">(Aug 20)</span></li></ul></div></div></div>
                             </div>
                         </div>
+                        
+                        <!-- Bearish Signal Card -->
+                        <div class="signal-card bg-white dark:bg-gradient-to-br from-gray-850 to-gray-900 rounded-xl shadow-md dark:shadow-lg border border-slate-200 dark:border-gray-700">
+                             <div class="p-6">
+                                <div class="flex space-x-6">
+                                    <div class="flex-shrink-0"><div class="relative w-24 h-24"><svg class="w-full h-full" viewBox="0 0 100 100"><circle class="gauge-bg stroke-gray-300 dark:stroke-gray-600" cx="50" cy="50" r="42"></circle><circle class="gauge-fg stroke-red-500 dark:stroke-red-400" cx="50" cy="50" r="42" style="stroke-dasharray: 264; stroke-dashoffset: 79.2;"></circle></svg><div class="absolute inset-0 flex flex-col items-center justify-center"><span class="text-2xl font-bold text-red-500 dark:text-red-400">70%</span><span class="text-xs text-gray-500 dark:text-gray-400">Strength</span></div></div></div>
+                                    <div class="flex-grow"><span class="text-sm font-semibold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/50 px-3 py-1 rounded-full border border-red-200 dark:border-red-700">HIGH-CONFIDENCE BEARISH</span><h3 class="text-3xl font-bold mt-2 text-slate-900 dark:text-white">Energy Sector</h3><div class="mt-2 flex items-center space-x-2"><div class="flex items-center space-x-1"><span class="w-2.5 h-2.5 bg-gray-300 dark:bg-gray-600 rounded-full"></span><span class="w-2.5 h-2.5 bg-red-500 dark:bg-red-400 rounded-full"></span><span class="w-2.5 h-2.5 bg-red-500 dark:bg-red-400 rounded-full"></span><span class="w-2.5 h-2.5 bg-red-500 dark:bg-red-400 rounded-full"></span></div><span class="text-xs font-semibold text-red-600 dark:text-red-400">3-Day Signal Streak</span></div></div>
+                                </div>
+                                <div class="mt-6"><h4 class="font-semibold text-gray-600 dark:text-gray-400">Key Stocks to Watch:</h4><div class="mt-2 space-y-2"><div class="p-3 bg-slate-50 dark:bg-gray-850 rounded-lg border border-slate-200 dark:border-gray-700"><p class="font-bold text-slate-900 dark:text-white">XOM</p><p class="text-sm text-gray-500 dark:text-gray-400">Triggered by news: <a href="#" class="article-link text-blue-600 dark:text-blue-400 hover:underline" data-tippy-content="<div class='p-2 text-left'><strong class='block'>Global Oil Demand Forecast Lowered Amid Economic Concerns</strong><p class='mt-1 text-xs'>The IEA has revised its forecast for global oil demand downwards, citing slowing economic growth in key markets.</p></div>">'Global Oil Demand Forecast Lowered...'</a></p></div></div></div>
+                                <div class="mt-6 pt-4 border-t border-slate-200 dark:border-gray-700"><h4 class="font-semibold text-gray-600 dark:text-gray-400">Evidence</h4><div class="mt-2 space-y-4 text-sm"><div><h5 class="font-bold text-slate-800 dark:text-gray-200">Today's Catalyst</h5><ul class="mt-1 list-disc list-inside space-y-1"><li><a href="#" class="article-link text-blue-600 dark:text-blue-400 hover:underline" data-tippy-content="<div class='p-2 text-left'><strong class='block'>Global Oil Demand Forecast Lowered Amid Economic Concerns</strong><p class='mt-1 text-xs'>The IEA has revised its forecast for global oil demand downwards, citing slowing economic growth in key markets.</p></div>">Global Oil Demand Forecast Lowered...</a><span class="ml-2 text-gray-400 dark:text-gray-500">(Aug 21)</span></li></ul></div><div><h5 class="font-bold text-slate-800 dark:text-gray-200">Historical Trend Evidence (Last 6 Days)</h5><ul class="mt-1 list-disc list-inside space-y-1"><li><a href="#" class="article-link text-blue-600 dark:text-blue-400 hover:underline" data-tippy-content="<div class='p-2 text-left'><strong class='block'>OPEC+ Surprise Meeting Stokes Supply Fears</strong><p class='mt-1 text-xs'>An unscheduled meeting has led to speculation about potential changes in production quotas.</p></div>">OPEC+ Surprise Meeting Stokes Supply Fears</a><span class="ml-2 text-gray-400 dark:text-gray-500">(Aug 20)</span></li></ul></div></div></div>
+                            </div>
+                        </div>
+
+                        <!-- Neutral Signal Card -->
                         <div class="signal-card bg-white dark:bg-gradient-to-br from-gray-850 to-gray-900 rounded-xl shadow-md dark:shadow-lg border border-slate-200 dark:border-gray-700">
                             <div class="p-6">
                                 <div class="flex items-start justify-between">
                                     <div>
-                                        <span class="text-sm font-semibold text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/50 px-3 py-1 rounded-full border border-amber-200 dark:border-amber-700">NEUTRAL / WATCH</span>
-                                        <a href="#" class="block text-3xl font-bold mt-2 text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Energy Sector</a>
+                                        <span class="text-sm font-semibold text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-900/50 px-3 py-1 rounded-full border border-gray-200 dark:border-gray-700">NEUTRAL SIGNAL</span>
+                                        <h3 class="text-3xl font-bold mt-2 text-slate-900 dark:text-white">Market in Observation Mode</h3>
                                     </div>
-                                    <div class="p-3 bg-slate-100 dark:bg-gray-800 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-amber-500 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg></div>
+                                    <div class="p-3 bg-slate-100 dark:bg-gray-800 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>
                                 </div>
-                                <p class="mt-6 text-gray-600 dark:text-gray-400">A bearish historical trend was detected, but no significant impact event occurred today. Monitor for potential catalysts.</p>
+                                <p class="mt-4 text-gray-600 dark:text-gray-400">No high-confidence signals detected today. The market appears to be consolidating. A good day to watch and wait.</p>
+                                <div class="mt-4 pt-4 border-t border-slate-200 dark:border-gray-700"><p class="text-sm font-semibold text-gray-600 dark:text-gray-400">Most Discussed Sector:</p><p class="font-bold text-slate-800 dark:text-white">Financials</p><p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Top story: <a href="#" class="article-link text-blue-600 dark:text-blue-400 hover:underline" data-tippy-content="<div class='p-2 text-left'><strong class='block'>Federal Reserve Holds Interest Rates Steady</strong><p class='mt-1 text-xs'>The central bank announced its decision to maintain the current interest rate, citing stable inflation data.</p></div>">'Federal Reserve Holds Interest Rates Steady'</a></p></div>
+                                <div class="mt-4 pt-4 border-t border-slate-200 dark:border-gray-700"><p class="text-sm text-gray-500 dark:text-gray-400 italic">"The stock market is a device for transferring money from the impatient to the patient." - Warren Buffett</p></div>
                             </div>
                         </div>
                     </div>
@@ -116,28 +197,35 @@
 
             <!-- Right Column: Summary & Pulse -->
             <div class="lg:col-span-1 space-y-8">
+                <!-- Section 1: Executive Summary -->
                 <section id="summary">
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900 dark:text-white">Executive Summary</h2>
                     <div class="bg-white dark:bg-gradient-to-br from-gray-800 to-gray-850 p-6 rounded-xl shadow-md dark:shadow-lg border border-slate-200 dark:border-blue-500/50">
-                        <h2 class="text-2xl font-bold mb-4 text-slate-900 dark:text-white">Executive Summary</h2>
-                        <p class="text-gray-700 dark:text-gray-300 text-left">A high-confidence bullish signal was identified for the <strong class="text-green-600 dark:text-green-400">Technology</strong> sector, driven by a consistent positive historical trend and a high-impact positive news event today. A bearish historical trend was noted for the <strong class="text-amber-600 dark:text-amber-400">Energy</strong> sector, but no immediate catalyst was found. <strong class="text-slate-900 dark:text-white">MSFT</strong> is the top predicted mover.</p>
+                        <div class="grid grid-cols-3 gap-4 text-center mb-4 border-b border-slate-200 dark:border-gray-700 pb-4">
+                            <div><p class="text-2xl font-bold text-slate-900 dark:text-white">1,204</p><p class="text-xs text-gray-500 dark:text-gray-400">News Volume</p></div>
+                            <div><p class="text-2xl font-bold text-green-600 dark:text-green-400">2.5 : 1</p><p class="text-xs text-gray-500 dark:text-gray-400">Sentiment Ratio</p></div>
+                            <div><p class="text-2xl font-bold text-slate-900 dark:text-white">MSFT</p><p class="text-xs text-gray-500 dark:text-gray-400">Top Mover</p></div>
+                        </div>
+                        <p class="text-gray-700 dark:text-gray-300 text-left">A high-confidence bullish signal was identified for the <strong class="text-green-600 dark:text-green-400">Technology</strong> sector, driven by a consistent positive historical trend and a high-impact positive news event today. A bearish historical trend was noted for the <strong class="text-amber-600 dark:text-amber-400">Energy</strong> sector, but no immediate catalyst was found.</p>
                     </div>
                 </section>
 
+                <!-- Section 3: Market Pulse -->
                 <section id="pulse">
                     <h2 class="text-xl font-semibold mb-3 text-slate-900 dark:text-white">Market Pulse</h2>
                     <div class="space-y-4">
                         <div class="bg-white dark:bg-gray-850 p-4 rounded-xl border border-slate-200 dark:border-gray-700">
                             <h3 class="font-semibold text-slate-800 dark:text-gray-300">Historical Trends</h3>
                             <ul class="mt-2 space-y-2 text-sm">
-                                <li class="flex items-center"><span class="text-green-500 dark:text-green-400 mr-2">▲</span> <span class="text-gray-500 dark:text-gray-400">Bullish Trend:</span> <a href="#" class="font-medium text-slate-700 dark:text-gray-200 ml-auto hover:underline">Technology</a></li>
-                                <li class="flex items-center"><span class="text-red-500 dark:text-red-400 mr-2">▼</span> <span class="text-gray-500 dark:text-gray-400">Bearish Trend:</span> <a href="#" class="font-medium text-slate-700 dark:text-gray-200 ml-auto hover:underline">Energy</a></li>
+                                <li class="flex items-center"><span class="text-green-500 dark:text-green-400 mr-2">▲</span> <span class="text-gray-500 dark:text-gray-400">Bullish Trend:</span> <span class="font-medium text-slate-700 dark:text-gray-200 ml-auto">Technology</span></li>
+                                <li class="flex items-center"><span class="text-red-500 dark:text-red-400 mr-2">▼</span> <span class="text-gray-500 dark:text-gray-400">Bearish Trend:</span> <span class="font-medium text-slate-700 dark:text-gray-200 ml-auto">Energy</span></li>
                             </ul>
                         </div>
                         <div class="bg-white dark:bg-gray-850 p-4 rounded-xl border border-slate-200 dark:border-gray-700">
                             <h3 class="font-semibold text-slate-800 dark:text-gray-300">Today's Impact Events</h3>
                             <ul class="mt-2 space-y-2 text-sm">
-                                <li class="flex items-center"><span class="text-green-500 dark:text-green-400 mr-2">▲</span> <span class="text-gray-500 dark:text-gray-400">Impact UP:</span> <a href="#" class="font-medium text-slate-700 dark:text-gray-200 ml-auto hover:underline">Technology</a></li>
-                                <li class="flex items-center"><span class="text-red-500 dark:text-red-400 mr-2">▼</span> <span class="text-gray-500 dark:text-gray-400">Impact DOWN:</span> <a href="#" class="font-medium text-slate-700 dark:text-gray-200 ml-auto hover:underline">Healthcare</a></li>
+                                <li class="flex items-center"><span class="text-green-500 dark:text-green-400 mr-2">▲</span> <span class="text-gray-500 dark:text-gray-400">Impact UP:</span> <span class="font-medium text-slate-700 dark:text-gray-200 ml-auto">Technology</span></li>
+                                <li class="flex items-center"><span class="text-red-500 dark:text-red-400 mr-2">▼</span> <span class="text-gray-500 dark:text-gray-400">Impact DOWN:</span> <span class="font-medium text-slate-700 dark:text-gray-200 ml-auto">Healthcare</span></li>
                             </ul>
                         </div>
                     </div>
@@ -145,140 +233,97 @@
             </div>
         </div>
 
-        <!-- Sector Sentiment Trends Chart -->
-        <section id="sentiment-chart" class="mt-12">
-            <h2 class="text-2xl font-bold mb-4 text-slate-900 dark:text-white">Sector Sentiment Trends (30 Days)</h2>
-            <div class="bg-white dark:bg-gray-850 p-4 sm:p-6 rounded-xl shadow-md dark:shadow-lg border border-slate-200 dark:border-gray-700">
-                <canvas id="sentimentTrendChart"></canvas>
-            </div>
-        </section>
-
-        <!-- Key News Feed -->
-        <section id="feed" class="mt-12">
-            <h2 class="text-2xl font-bold mb-4 text-slate-900 dark:text-white">Key News Feed</h2>
-            <div class="bg-white dark:bg-gray-850 rounded-xl shadow-md dark:shadow-lg border border-slate-200 dark:border-gray-700 overflow-x-auto">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-slate-50 dark:bg-gray-900/70">
-                        <tr>
-                            <th class="p-4 font-semibold text-slate-800 dark:text-gray-300">Article</th>
-                            <th class="p-4 font-semibold text-slate-800 dark:text-gray-300">Sentiment</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-200 dark:divide-gray-700">
-                        <tr>
-                            <td class="p-4 text-blue-600 dark:text-blue-400 font-medium hover:underline"><a href="#">Microsoft Unveils New AI Chip in Major Deal</a></td>
-                            <td class="p-4"><span class="font-semibold text-green-600 dark:text-green-400">Positive (0.98)</span></td>
-                        </tr>
-                        <tr>
-                            <td class="p-4 text-blue-600 dark:text-blue-400 font-medium hover:underline"><a href="#">New Drug Trial Fails for Major Pharma Co</a></td>
-                            <td class="p-4"><span class="font-semibold text-red-600 dark:text-red-400">Negative (0.99)</span></td>
-                        </tr>
-                        <tr>
-                            <td class="p-4 text-blue-600 dark:text-blue-400 font-medium hover:underline"><a href="#">Federal Reserve Holds Interest Rates Steady</a></td>
-                            <td class="p-4"><span class="font-semibold text-gray-600 dark:text-gray-400">Neutral (0.91)</span></td>
-                        </tr>
-                    </tbody>
-                </table>
+        <!-- FULL-WIDTH SECTION: Signal History -->
+        <section id="signal-history" class="mt-12">
+            <h2 class="text-2xl font-bold mb-4 text-slate-900 dark:text-white">Signal History (Last 6 Days)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Day -1 -->
+                <div class="bg-white dark:bg-gray-850 p-4 rounded-lg border border-slate-200 dark:border-gray-700 text-sm">
+                    <p class="font-bold text-slate-800 dark:text-gray-200">Aug 20, 2025</p>
+                    <ul class="mt-2 space-y-1 text-gray-600 dark:text-gray-400">
+                        <li class="flex items-center"><span class="text-green-500 dark:text-green-400 mr-2">▲</span> Bullish Trend: Technology</li>
+                        <li class="flex items-center"><span class="text-red-500 dark:text-red-400 mr-2">▼</span> Impact DOWN: Healthcare</li>
+                    </ul>
+                </div>
+                <!-- Day -2 -->
+                <div class="bg-white dark:bg-gray-850 p-4 rounded-lg border border-slate-200 dark:border-gray-700 text-sm">
+                    <p class="font-bold text-slate-800 dark:text-gray-200">Aug 19, 2025</p>
+                     <ul class="mt-2 space-y-1 text-gray-600 dark:text-gray-400">
+                        <li class="flex items-center"><span class="text-green-500 dark:text-green-400 mr-2">▲</span> Bullish Trend: Technology</li>
+                        <li class="flex items-center"><span class="text-gray-400 dark:text-gray-500 mr-2">—</span> No Impact Events</li>
+                    </ul>
+                </div>
+                <!-- Day -3 -->
+                <div class="bg-white dark:bg-gray-850 p-4 rounded-lg border border-slate-200 dark:border-gray-700 text-sm">
+                    <p class="font-bold text-slate-800 dark:text-gray-200">Aug 18, 2025</p>
+                    <ul class="mt-2 space-y-1 text-gray-600 dark:text-gray-400">
+                        <li class="flex items-center"><span class="text-red-500 dark:text-red-400 mr-2">▼</span> Impact DOWN: Energy</li>
+                    </ul>
+                </div>
+                <!-- Day -4 -->
+                 <div class="bg-white dark:bg-gray-850 p-4 rounded-lg border border-slate-200 dark:border-gray-700 text-sm">
+                    <p class="font-bold text-slate-800 dark:text-gray-200">Aug 17, 2025</p>
+                    <p class="mt-2 text-gray-600 dark:text-gray-400">No significant signals detected.</p>
+                </div>
+                 <!-- Day -5 -->
+                 <div class="bg-white dark:bg-gray-850 p-4 rounded-lg border border-slate-200 dark:border-gray-700 text-sm">
+                    <p class="font-bold text-slate-800 dark:text-gray-200">Aug 16, 2025</p>
+                    <p class="mt-2 text-gray-600 dark:text-gray-400">No significant signals detected.</p>
+                </div>
+                 <!-- Day -6 -->
+                 <div class="bg-white dark:bg-gray-850 p-4 rounded-lg border border-slate-200 dark:border-gray-700 text-sm">
+                    <p class="font-bold text-slate-800 dark:text-gray-200">Aug 15, 2025</p>
+                    <ul class="mt-2 space-y-1 text-gray-600 dark:text-gray-400">
+                        <li class="flex items-center"><span class="text-red-500 dark:text-red-400 mr-2">▼</span> Impact DOWN: Financials</li>
+                    </ul>
+                </div>
             </div>
         </section>
 
         <!-- Footer -->
         <footer class="mt-12 pt-8 border-t border-slate-200 dark:border-gray-800 text-center text-sm text-gray-500 dark:text-gray-400">
-            <div class="flex justify-center items-center space-x-6 flex-wrap">
-                <a href="#" id="how-it-works-link" class="font-semibold hover:underline">How It Works</a>
-                <a href="https://github.com/sponsors/nguyenph88" target="_blank" rel="noopener noreferrer" class="font-semibold hover:underline flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" /></svg>
-                    Sponsor on GitHub
-                </a>
-                <a href="https://www.buymeacoffee.com/peternguyen" target="_blank" rel="noopener noreferrer" class="font-semibold hover:underline flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" viewBox="0 0 20 20" fill="currentColor"><path d="M2 5a2 2 0 012-2h8a2 2 0 012 2v2a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm14-2a2 2 0 00-2 2v11a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2h-2z" /></svg>
-                    Buy Me a Coffee
-                </a>
-            </div>
-            <p class="mt-4">&copy; 2025 Peter Nguyen. All Rights Reserved.</p>
+            <p>&copy; 2025 Peter Nguyen. All Rights Reserved.</p>
             <p class="mt-1">
                 Created by <a href="https://github.com/nguyenph88" target="_blank" rel="noopener noreferrer" class="font-semibold text-blue-600 dark:text-blue-400 hover:underline">Peter Nguyen</a>.
             </p>
         </footer>
     </div>
 
-    <!-- "How It Works" Modal -->
-    <div id="algorithm-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden modal-backdrop">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl transform transition-all">
-            <div class="p-6 border-b border-slate-200 dark:border-gray-700 flex justify-between items-center">
-                <h3 class="text-xl font-bold text-slate-900 dark:text-white">How Stockometry Works</h3>
-                <button id="close-modal-button" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-gray-700">&times;</button>
-            </div>
-            <div class="p-6 space-y-4 text-gray-600 dark:text-gray-300">
-                <div class="flex items-start space-x-4"><div class="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-blue-100 dark:bg-blue-900/50 rounded-lg text-blue-600 dark:text-blue-400 font-bold text-xl">1</div><div><h4 class="font-bold text-slate-800 dark:text-white">Historical Trend Analysis</h4><p>The bot analyzes news from the last 6 days to establish a baseline sentiment trend for each market sector. This helps identify the underlying "market mood."</p></div></div>
-                <div class="flex items-start space-x-4"><div class="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-blue-100 dark:bg-blue-900/50 rounded-lg text-blue-600 dark:text-blue-400 font-bold text-xl">2</div><div><h4 class="font-bold text-slate-800 dark:text-white">Daily Impact Analysis</h4><p>It then scans only today's news for specific, high-impact events like new regulations, corporate deals, or major announcements that could act as a short-term catalyst.</p></div></div>
-                <div class="flex items-start space-x-4"><div class="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-green-100 dark:bg-green-900/50 rounded-lg text-green-600 dark:text-green-400 font-bold text-xl">3</div><div><h4 class="font-bold text-slate-800 dark:text-white">High-Confidence Signal Generation</h4><p>A high-confidence signal is generated only when a daily impact event **confirms** an existing historical trend. This confluence of evidence is what powers our most actionable insights.</p></div></div>
-            </div>
-        </div>
-    </div>
-
     <script>
-        // --- Theme Toggle ---
-        const themeToggle = document.getElementById('theme-toggle');
-        const sunIcon = document.getElementById('theme-icon-sun');
-        const moonIcon = document.getElementById('theme-icon-moon');
-        const applyTheme = () => {
-            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark');
-                sunIcon.classList.remove('hidden');
-                moonIcon.classList.add('hidden');
-            } else {
-                document.documentElement.classList.remove('dark');
-                sunIcon.classList.add('hidden');
-                moonIcon.classList.remove('hidden');
-            }
-        };
-        applyTheme();
-        themeToggle.addEventListener('click', () => {
-            sunIcon.classList.toggle('hidden');
-            moonIcon.classList.toggle('hidden');
-            document.documentElement.classList.toggle('dark');
-            localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
-            renderChart(); // Re-render chart with new theme colors
-        });
-
-        // --- Modal Logic ---
-        const modal = document.getElementById('algorithm-modal');
-        const openModalLink = document.getElementById('how-it-works-link');
-        const closeModalButton = document.getElementById('close-modal-button');
-        openModalLink.addEventListener('click', (e) => { e.preventDefault(); modal.classList.remove('hidden'); });
-        closeModalButton.addEventListener('click', () => modal.classList.add('hidden'));
-        modal.addEventListener('click', (e) => { if (e.target === modal) { modal.classList.add('hidden'); } });
-
-        // --- Chart.js Logic ---
-        let sentimentChart = null;
-        const renderChart = () => {
-            const ctx = document.getElementById('sentimentTrendChart').getContext('2d');
-            const isDarkMode = document.documentElement.classList.contains('dark');
-            
-            // Dummy data for the chart
-            const labels = Array.from({length: 30}, (_, i) => { const d = new Date('2025-07-23'); d.setDate(d.getDate() + i); return d; });
-            const generateData = () => labels.map(() => Math.random() * 1.4 - 0.7);
-            const datasets = [
-                { label: 'Technology', data: generateData(), borderColor: '#3b82f6', tension: 0.3, pointRadius: 0, borderWidth: 2 },
-                { label: 'Energy', data: generateData(), borderColor: '#f59e0b', tension: 0.3, pointRadius: 0, borderWidth: 2 },
-                { label: 'Healthcare', data: generateData(), borderColor: '#ef4444', tension: 0.3, pointRadius: 0, borderWidth: 2 },
-            ];
-            const chartConfig = {
-                type: 'line',
-                data: { labels, datasets },
-                options: { responsive: true, maintainAspectRatio: false,
-                    scales: {
-                        x: { type: 'time', time: { unit: 'day' }, grid: { color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }, ticks: { color: isDarkMode ? '#9ca3af' : '#4b5563' } },
-                        y: { grid: { color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }, ticks: { color: isDarkMode ? '#9ca3af' : '#4b5563' }, title: { display: true, text: 'Sentiment Score', color: isDarkMode ? '#9ca3af' : '#4b5563' } }
-                    },
-                    plugins: { legend: { labels: { color: isDarkMode ? '#d1d5db' : '#374151' } } }
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Theme Toggle ---
+            const themeToggle = document.getElementById('theme-toggle');
+            const sunIcon = document.getElementById('theme-icon-sun');
+            const moonIcon = document.getElementById('theme-icon-moon');
+            const applyTheme = () => {
+                if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                    sunIcon.classList.remove('hidden');
+                    moonIcon.classList.add('hidden');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    sunIcon.classList.add('hidden');
+                    moonIcon.classList.remove('hidden');
                 }
             };
-            if (sentimentChart) { sentimentChart.destroy(); }
-            sentimentChart = new Chart(ctx, chartConfig);
-        };
-        renderChart();
+            applyTheme();
+            themeToggle.addEventListener('click', () => {
+                sunIcon.classList.toggle('hidden');
+                moonIcon.classList.toggle('hidden');
+                document.documentElement.classList.toggle('dark');
+                localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+            });
+
+            // --- Tooltip Initialization ---
+            tippy('.article-link', {
+                content(reference) {
+                    return reference.getAttribute('data-tippy-content');
+                },
+                allowHTML: true,
+                theme: 'stockometry',
+                placement: 'top-start',
+            });
+        });
     </script>
 
 </body>

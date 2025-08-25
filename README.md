@@ -1,4 +1,14 @@
-# Stockometry - Version 2.1.0
+# Stockometry - Version 2.3.0
+
+## PROJECT IS NO LONGER MAINTAINED - API RESTRICTION KILLED IT
+IT'S SAD, but since the newsapi restrict the FREE tier to use only the last 2 days of article for now, the main core functionality to analyze the historical trends for the last 6 days is no longer valid, we only have data for today and yesteday.
+
+There is a paid plan, you can continue to use that, but i'm not going to pay hundred of dollar a month for a free project.
+
+I'm publishing the source code in case you want to continue to maintain or use, the algorithm is there but getting complex somehow just with 2 days. There is a UI source as well.
+
+Peace out!
+
 
 ## Overview
 Stockometry is a **two-stage financial analysis system** that combines historical trend analysis with real-time news impact assessment to generate actionable trading signals. The system analyzes 11 market sectors and provides buy/sell recommendations based on sentiment trends and current events.
