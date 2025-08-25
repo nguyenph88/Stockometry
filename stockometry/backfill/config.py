@@ -10,13 +10,13 @@ from datetime import time
 
 @dataclass
 class BackfillConfig:
-    """Configuration for the backfill system"""
+    """Configuration for backfill operations"""
     
-    # Daily report schedule configuration
+    # Number of days to look back for missing reports
+    lookback_days: int = 2  # Changed from 7 to 2 to match NewsAPI data availability
+    
+    # Daily report times (in UTC)
     daily_report_times: List[time] = None
-    
-    # Lookback period (how many days to check)
-    lookback_days: int = 7
     
     def __post_init__(self):
         """Set default daily report times if none provided"""

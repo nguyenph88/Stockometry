@@ -18,20 +18,12 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class BackfillProgress:
-    """Tracks progress of backfill process"""
+    """Simple progress tracking"""
     day_date: datetime.date
     status: str  # 'pending', 'collecting', 'processing', 'complete', 'failed'
-    phase: str   # 'pending', 'data_collection', 'report_generation'
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     error_message: Optional[str] = None
-    
-    # Phase-specific progress
-    data_collection_progress: int = 0  # 0-100
-    report_generation_progress: int = 0  # 0-100
-    current_step: str = ""
-    total_steps: int = 0
-    completed_steps: int = 0
 
 class BackfillRunner:
     """Orchestrates the complete backfill process"""
@@ -45,103 +37,6 @@ class BackfillRunner:
         logger.info(f"BackfillRunner initialized with config: {self.config.to_dict()}")
         logger.info(f"Database Environment: {settings.environment}")
         logger.info(f"Active Database: {settings.db_name_active}")
-    
-    def _print_separator(self, title: str = ""):
-        """Print a visual separator with optional title"""
-        if title:
-            print(f"\n{'='*60}")
-            print(f"🚀 {title}")
-            print(f"{'='*60}")
-        else:
-            print(f"\n{'-'*60}")
-    
-    def _print_phase_header(self, phase: str, phase_number: int, total_phases: int):
-        """Print a phase header with progress indicator"""
-        print(f"\n{'#'*50}")
-        print(f"📋 PHASE {phase_number}/{total_phases}: {phase.upper()}")
-        print(f"{'#'*50}")
-    
-    def _print_day_progress(self, progress: BackfillProgress, day_index: int, total_days: int):
-        """Print progress for a specific day"""
-        day_num = day_index + 1
-        status_emoji = {
-            'pending': '⏳',
-            'collecting': '📥',
-            'processing': '⚙️',
-            'complete': '✅',
-            'failed': '❌'
-        }
-        
-        emoji = status_emoji.get(progress.status, '❓')
-        
-        if progress.phase == 'data_collection':
-            progress_bar = self._create_progress_bar(progress.data_collection_progress)
-            print(f"  {emoji} Day {day_num}/{total_days}: {progress.day_date} - Data Collection {progress_bar} {progress.data_collection_progress}%")
-            if progress.current_step:
-                print(f"     └─ {progress.current_step}")
-        elif progress.phase == 'report_generation':
-            progress_bar = self._create_progress_bar(progress.report_generation_progress)
-            print(f"  {emoji} Day {day_num}/{total_days}: {progress.day_date} - Report Generation {progress_bar} {progress.report_generation_progress}%")
-            if progress.current_step:
-                print(f"     └─ {progress.current_step}")
-        else:
-            print(f"  {emoji} Day {day_num}/{total_days}: {progress.day_date} - {progress.status.title()}")
-    
-    def _create_progress_bar(self, percentage: int, width: int = 20) -> str:
-        """Create a visual progress bar"""
-        filled = int(width * percentage / 100)
-        bar = '█' * filled + '░' * (width - filled)
-        return f"[{bar}]"
-    
-    def _print_overall_progress(self):
-        """Print overall progress summary"""
-        total_days = len(self.progress)
-        completed_days = len([p for p in self.progress if p.status == 'complete'])
-        failed_days = len([p for p in self.progress if p.status == 'failed'])
-        in_progress_days = len([p for p in self.progress if p.status in ['collecting', 'processing']])
-        pending_days = len([p for p in self.progress if p.status == 'pending'])
-        
-        overall_progress = (completed_days / total_days * 100) if total_days > 0 else 0
-        
-        print(f"\n📊 OVERALL PROGRESS: {overall_progress:.1f}%")
-        print(f"   ✅ Completed: {completed_days}/{total_days}")
-        print(f"   📥 In Progress: {in_progress_days}")
-        print(f"   ❌ Failed: {failed_days}")
-        print(f"   ⏳ Pending: {pending_days}")
-        
-        # Overall progress bar
-        overall_bar = self._create_progress_bar(int(overall_progress), 40)
-        print(f"   {overall_bar}")
-    
-    def _print_phase_progress(self, phase_name: str):
-        """Print progress for a specific phase"""
-        phase_progress = []
-        
-        if phase_name == 'data_collection':
-            phase_progress = [p.data_collection_progress for p in self.progress]
-        elif phase_name == 'report_generation':
-            phase_progress = [p.report_generation_progress for p in self.progress]
-        
-        if phase_progress:
-            avg_progress = sum(phase_progress) / len(phase_progress)
-            print(f"\n📈 {phase_name.replace('_', ' ').title()} Progress: {avg_progress:.1f}%")
-            phase_bar = self._create_progress_bar(int(avg_progress), 30)
-            print(f"   {phase_bar}")
-    
-    def _update_day_progress(self, day_date: datetime.date, phase: str, progress_percentage: int, 
-                           current_step: str = "", completed_steps: int = 0, total_steps: int = 0):
-        """Update progress for a specific day"""
-        for progress in self.progress:
-            if progress.day_date == day_date:
-                if phase == 'data_collection':
-                    progress.data_collection_progress = progress_percentage
-                elif phase == 'report_generation':
-                    progress.report_generation_progress = progress_percentage
-                
-                progress.current_step = current_step
-                progress.completed_steps = completed_steps
-                progress.total_steps = total_steps
-                break
     
     def _validate_database_environment(self):
         """Validate that we're working with the correct database environment"""
@@ -197,8 +92,9 @@ class BackfillRunner:
             Dictionary with backfill results and status
         """
         try:
-            self._print_separator("BACKFILL PROCESS STARTING")
-            logger.info("Starting backfill process")
+            logger.info("="*60)
+            logger.info("BACKFILL PROCESS STARTING")
+            logger.info("="*60)
             
             # Validate database environment first
             self._validate_database_environment()
@@ -211,8 +107,7 @@ class BackfillRunner:
                 start_date = end_date - timedelta(days=self.config.lookback_days - 1)
             
             logger.info(f"Backfill range: {start_date} to {end_date}")
-            print(f"📅 Date Range: {start_date} to {end_date}")
-            print(f"📊 Total Days: {(end_date - start_date).days + 1}")
+            logger.info(f"Total Days: {(end_date - start_date).days + 1}")
             
             if dry_run:
                 return self._dry_run_backfill(start_date, end_date)
@@ -221,19 +116,27 @@ class BackfillRunner:
             self._initialize_progress(start_date, end_date)
             
             # Phase 1: Data Collection
-            self._print_phase_header("Data Collection", 1, 2)
+            logger.info("-"*50)
+            logger.info("PHASE 1: DATA COLLECTION")
+            logger.info("-"*50)
             self._collect_data_for_all_days()
             
             # Phase 2: Report Generation
-            self._print_phase_header("Report Generation", 2, 2)
+            logger.info("-"*50)
+            logger.info("PHASE 2: REPORT GENERATION")
+            logger.info("-"*50)
             self._generate_reports_for_all_days()
             
             # Final status
-            self._print_separator("BACKFILL PROCESS COMPLETED")
+            logger.info("="*60)
+            logger.info("BACKFILL PROCESS COMPLETED")
+            logger.info("="*60)
             return self._get_final_status()
             
         except Exception as e:
-            self._print_separator("BACKFILL PROCESS FAILED")
+            logger.error("="*60)
+            logger.error("BACKFILL PROCESS FAILED")
+            logger.error("="*60)
             logger.error(f"Backfill process failed: {str(e)}")
             return {
                 "status": "failed",
@@ -276,15 +179,14 @@ class BackfillRunner:
         }
     
     def _initialize_progress(self, start_date: datetime.date, end_date: datetime.date):
-        """Initialize progress tracking for all days"""
+        """Initialize simple progress tracking for all days"""
         self.progress = []
         current_date = start_date
         
         while current_date <= end_date:
             progress = BackfillProgress(
                 day_date=current_date,
-                status='pending',
-                phase='pending'
+                status='pending'
             )
             self.progress.append(progress)
             current_date += timedelta(days=1)
@@ -297,32 +199,23 @@ class BackfillRunner:
         
         for day_index, progress in enumerate(self.progress):
             try:
-                print(f"\n📥 Processing Day {day_index + 1}/{total_days}: {progress.day_date}")
+                logger.info(f"Processing Day {day_index + 1}/{total_days}: {progress.day_date}")
                 
                 progress.status = 'collecting'
-                progress.phase = 'data_collection'
                 progress.started_at = datetime.now(timezone.utc)
                 
-                # Simulate data collection with progress updates
+                # Collect data for this day
                 self._collect_data_for_day(progress.day_date, day_index, total_days)
                 
                 progress.status = 'complete'
                 progress.completed_at = datetime.now(timezone.utc)
-                progress.data_collection_progress = 100
                 
-                print(f"  ✅ Data collection complete for {progress.day_date}")
                 logger.info(f"Data collection complete for {progress.day_date}")
-                
-                # Show progress after each day
-                self._print_overall_progress()
-                self._print_phase_progress('data_collection')
                 
             except Exception as e:
                 progress.status = 'failed'
                 progress.error_message = str(e)
-                progress.data_collection_progress = 0
                 logger.error(f"Data collection failed for {progress.day_date}: {str(e)}")
-                print(f"  ❌ Data collection failed for {progress.day_date}: {str(e)}")
                 # Continue with next day instead of failing completely
     
     def _generate_reports_for_all_days(self):
@@ -331,37 +224,27 @@ class BackfillRunner:
         
         for day_index, progress in enumerate(self.progress):
             if progress.status == 'failed':
-                print(f"\n⚠️  Skipping report generation for {progress.day_date} due to data collection failure")
                 logger.warning(f"Skipping report generation for {progress.day_date} due to data collection failure")
                 continue
                 
             try:
-                print(f"\n⚙️  Processing Day {day_index + 1}/{total_days}: {progress.day_date}")
+                logger.info(f"Processing Day {day_index + 1}/{total_days}: {progress.day_date}")
                 
                 progress.status = 'processing'
-                progress.phase = 'report_generation'
                 progress.started_at = datetime.now(timezone.utc)
                 
-                # Simulate report generation with progress updates
+                # Generate reports for this day
                 self._generate_reports_for_day(progress.day_date, day_index, total_days)
                 
                 progress.status = 'complete'
                 progress.completed_at = datetime.now(timezone.utc)
-                progress.report_generation_progress = 100
                 
-                print(f"  ✅ Report generation complete for {progress.day_date}")
                 logger.info(f"Report generation complete for {progress.day_date}")
-                
-                # Show progress after each day
-                self._print_overall_progress()
-                self._print_phase_progress('report_generation')
                 
             except Exception as e:
                 progress.status = 'failed'
                 progress.error_message = str(e)
-                progress.report_generation_progress = 0
                 logger.error(f"Report generation failed for {progress.day_date}: {str(e)}")
-                print(f"  ❌ Report generation failed for {progress.day_date}: {str(e)}")
                 # Continue with next day instead of failing completely
     
     def _collect_data_for_day(self, date: datetime.date, day_index: int, total_days: int):
@@ -372,8 +255,6 @@ class BackfillRunner:
             # Convert date to datetime for the specific report times
             # We'll collect data up to each report time to respect time-aware filtering
             report_times = self.config.daily_report_times
-            total_steps = len(report_times) * 3  # 3 steps per report time
-            completed_steps = 0
             
             for report_time in report_times:
                 # Create datetime for this specific report time on the target date
@@ -383,18 +264,12 @@ class BackfillRunner:
                 
                 # Step 1: Fetch and store news articles (up to report time)
                 self._collect_news_for_report_time(date, report_datetime)
-                completed_steps += 1
-                self._update_progress(date, 'data_collection', completed_steps, total_steps, "News collection")
                 
                 # Step 2: Fetch and store market data (up to report time)
                 self._collect_market_data_for_report_time(date, report_datetime)
-                completed_steps += 1
-                self._update_progress(date, 'data_collection', completed_steps, total_steps, "Market data collection")
                 
                 # Step 3: Process articles and store features (up to report time)
                 self._process_articles_for_report_time(date, report_datetime)
-                completed_steps += 1
-                self._update_progress(date, 'data_collection', completed_steps, total_steps, "Article processing")
                 
                 logger.info(f"  Data collection complete for {date} at {report_time}")
                 
@@ -402,40 +277,20 @@ class BackfillRunner:
             logger.error(f"Data collection failed for {date}: {str(e)}")
             raise
     
-    def _update_progress(self, date: datetime.date, phase: str, completed_steps: int, total_steps: int, current_step: str):
-        """Update progress for a specific day and phase"""
-        progress_percentage = int((completed_steps / total_steps) * 100) if total_steps > 0 else 0
-        
-        for progress in self.progress:
-            if progress.day_date == date:
-                if phase == 'data_collection':
-                    progress.data_collection_progress = progress_percentage
-                elif phase == 'report_generation':
-                    progress.report_generation_progress = progress_percentage
-                
-                progress.current_step = current_step
-                progress.completed_steps = completed_steps
-                progress.total_steps = total_steps
-                break
-    
     def _collect_news_for_report_time(self, date: datetime.date, report_datetime: datetime):
         """Collect news articles up to the specific report time"""
         try:
             from ..core.collectors.news_collector import fetch_and_store_news
             
-            # Collect news up to the report time
-            # This respects the time-aware filtering we discussed
-            logger.info(f"    📰 Fetching news articles up to {report_datetime}")
+            logger.info(f"    Fetching news articles up to {report_datetime}")
             
             # Call the existing news collector
-            # The existing function should handle the time filtering
             fetch_and_store_news()
             
-            logger.info(f"    ✅ News collection complete for {report_datetime}")
+            logger.info(f"    News collection complete for {report_datetime}")
             
         except Exception as e:
             logger.error(f"News collection failed for {report_datetime}: {str(e)}")
-            # Don't fail completely - continue with other data sources
             logger.warning(f"Continuing with other data sources despite news collection failure")
     
     def _collect_market_data_for_report_time(self, date: datetime.date, report_datetime: datetime):
@@ -443,33 +298,31 @@ class BackfillRunner:
         try:
             from ..core.collectors.market_data_collector import fetch_and_store_market_data
             
-            logger.info(f"    📊 Fetching market data up to {report_datetime}")
+            logger.info(f"    Fetching market data up to {report_datetime}")
             
             # Call the existing market data collector
             fetch_and_store_market_data()
             
-            logger.info(f"    ✅ Market data collection complete for {report_datetime}")
+            logger.info(f"    Market data collection complete for {report_datetime}")
             
         except Exception as e:
             logger.error(f"Market data collection failed for {report_datetime}: {str(e)}")
-            # Don't fail completely - continue with other data sources
             logger.warning(f"Continuing with other data sources despite market data collection failure")
     
     def _process_articles_for_report_time(self, date: datetime.date, report_datetime: datetime):
         """Process articles and store features up to the specific report time"""
         try:
-            from ..core.analysis.historical_analyzer import process_articles_and_store_features
+            from ..core.nlp.processor import process_articles_and_store_features
             
-            logger.info(f"    🔍 Processing articles and storing features up to {report_datetime}")
+            logger.info(f"    Processing articles and storing features up to {report_datetime}")
             
             # Call the existing article processor
             process_articles_and_store_features()
             
-            logger.info(f"    ✅ Article processing complete for {report_datetime}")
+            logger.info(f"    Article processing complete for {report_datetime}")
             
         except Exception as e:
             logger.error(f"Article processing failed for {report_datetime}: {str(e)}")
-            # Don't fail completely - continue with other processing
             logger.warning(f"Continuing with other processing despite article processing failure")
     
     def _generate_reports_for_day(self, date: datetime.date, day_index: int, total_days: int):
@@ -479,8 +332,6 @@ class BackfillRunner:
         try:
             # Generate reports for each report time on this date
             report_times = self.config.daily_report_times
-            total_steps = len(report_times)  # 1 step per report time (synthesis + save combined)
-            completed_steps = 0
             
             for report_time in report_times:
                 # Create datetime for this specific report time on the target date
@@ -490,8 +341,6 @@ class BackfillRunner:
                 
                 # Generate and save the report (this includes synthesis)
                 self._generate_and_save_report(date, report_datetime)
-                completed_steps += 1
-                self._update_progress(date, 'report_generation', completed_steps, total_steps, f"Report for {report_time}")
                 
                 logger.info(f"  Report generation complete for {date} at {report_time}")
                 
@@ -502,20 +351,42 @@ class BackfillRunner:
     def _run_synthesis_for_report_time(self, date: datetime.date, report_datetime: datetime):
         """Run synthesis and analysis for the specific report time"""
         try:
-            from ..core.analysis.synthesizer import synthesize_analyses
+            from ..core.analysis.historical_analyzer import analyze_historical_trends
+            from ..core.analysis.today_analyzer import analyze_impact_for_date
             
-            logger.info(f"    🧠 Running synthesis and analysis for {report_datetime}")
+            logger.info(f"    Running synthesis and analysis for {report_datetime}")
             
-            # Call the existing synthesis function
-            # This will analyze the collected data and generate insights
-            synthesis_result = synthesize_analyses()
+            # For backfill, we need to analyze data for the target date, not today
+            # Use the new backfill-specific function that respects the target date
             
-            logger.info(f"    ✅ Synthesis complete for {report_datetime}")
+            # 1. Historical trends (this should work for any date)
+            historical_result = analyze_historical_trends()
+            
+            # 2. Impact analysis for the target date (not today)
+            impact_result = analyze_impact_for_date(date)
+            
+            # Combine signals
+            all_signals = historical_result['signals'] + impact_result['signals']
+            
+            # Create executive summary
+            summary_points = historical_result['summary_points'] + impact_result['summary_points']
+            executive_summary = " ".join(summary_points)
+            
+            # Create final report object
+            synthesis_result = {
+                "executive_summary": executive_summary,
+                "signals": {
+                    "historical": historical_result['signals'],
+                    "impact": impact_result['signals'],
+                    "confidence": []  # Simplified for backfill
+                }
+            }
+            
+            logger.info(f"    Synthesis complete for {report_datetime}")
             return synthesis_result
             
         except Exception as e:
             logger.error(f"Synthesis failed for {report_datetime}: {str(e)}")
-            # Don't fail completely - continue with other processing
             logger.warning(f"Continuing with other processing despite synthesis failure")
             return None
     
@@ -524,13 +395,13 @@ class BackfillRunner:
         try:
             from ..core.output.processor import OutputProcessor
             
-            logger.info(f"    💾 Generating and saving report for {report_datetime}")
+            logger.info(f"    Generating and saving report for {report_datetime}")
             
             # First, run synthesis to get the report object
             synthesis_result = self._run_synthesis_for_report_time(date, report_datetime)
             
             if synthesis_result is None:
-                logger.warning(f"    ⚠️  No synthesis result available for {report_datetime}")
+                logger.warning(f"    No synthesis result available for {report_datetime}")
                 return
             
             # Create output processor instance with the report object
@@ -538,19 +409,17 @@ class BackfillRunner:
             output_processor = OutputProcessor(report_object=synthesis_result, run_source="BACKFILL")
             
             # Save the report to the daily_reports table
-            # This will use the existing database connection and respect the environment
-            saved_report = output_processor.save_to_database()
+            saved_report = output_processor.process_and_save()
             
             if saved_report:
-                logger.info(f"    ✅ Report saved to daily_reports table for {report_datetime}")
-                logger.info(f"    📊 Report ID: {saved_report.get('id', 'unknown')}")
-                logger.info(f"    🏷️  Run Source: BACKFILL")
+                logger.info(f"    Report saved to daily_reports table for {report_datetime}")
+                logger.info(f"    Report ID: {saved_report}")
+                logger.info(f"    Run Source: BACKFILL")
             else:
-                logger.warning(f"    ⚠️  Report save returned no result for {report_datetime}")
+                logger.warning(f"    Report save returned no result for {report_datetime}")
             
         except Exception as e:
             logger.error(f"Report saving failed for {report_datetime}: {str(e)}")
-            # Don't fail completely - continue with other processing
             logger.warning(f"Continuing with other processing despite report saving failure")
     
     def _get_final_status(self) -> Dict[str, Any]:
@@ -561,6 +430,12 @@ class BackfillRunner:
         pending_days = len([p for p in self.progress if p.status == 'pending'])
         
         success_rate = (completed_days / total_days * 100) if total_days > 0 else 0
+        
+        logger.info(f"Backfill Summary:")
+        logger.info(f"  Total Days: {total_days}")
+        logger.info(f"  Completed: {completed_days}")
+        logger.info(f"  Failed: {failed_days}")
+        logger.info(f"  Success Rate: {success_rate:.1f}%")
         
         return {
             "status": "complete" if failed_days == 0 else "partial_success",
