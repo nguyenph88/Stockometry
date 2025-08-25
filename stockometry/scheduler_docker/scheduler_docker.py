@@ -142,39 +142,39 @@ class SchedulerDocker:
             )
             print("Scheduler Docker: Added NLP Processing job (every hour at 5 minutes past)")
             
-            # Final Synthesis Jobs - 3 times daily for fresher insights
-            # Morning Report (full daily analysis)
+            # Schedule daily reports at market-aligned times
+            # 06:00 UTC = US pre-market, European morning
+            # 14:00 UTC = US morning trading, European midday  
+            # 22:00 UTC = US market close, complete daily coverage
             self._scheduler.add_job(
-                self._run_synthesis_and_save,
-                'cron',
-                hour=2,
-                minute=15,
-                id='scheduler_docker_morning_report_job',
-                name='Morning Report Generation'
+                func=self._run_synthesis_and_save,
+                trigger='cron',
+                hour=6,
+                minute=0,
+                id='daily_report_morning',
+                name='Daily Report - Morning (Pre-market)',
+                replace_existing=True
             )
-            print("Scheduler Docker: Added Morning Report Generation job (daily at 2:15 AM)")
             
-            # Midday Update (quick refresh with new news/NLP data)
             self._scheduler.add_job(
-                self._run_synthesis_and_save,
-                'cron',
-                hour=10,
-                minute=15,
-                id='scheduler_docker_midday_report_job',
-                name='Midday Report Update'
+                func=self._run_synthesis_and_save,
+                trigger='cron',
+                hour=14,
+                minute=0,
+                id='daily_report_midday',
+                name='Daily Report - Midday (Trading)',
+                replace_existing=True
             )
-            print("Scheduler Docker: Added Midday Report Update job (daily at 10:15 AM)")
             
-            # Evening Summary (end-of-day wrap-up)
             self._scheduler.add_job(
-                self._run_synthesis_and_save,
-                'cron',
-                hour=18,
-                minute=15,
-                id='scheduler_docker_evening_report_job',
-                name='Evening Report Summary'
+                func=self._run_synthesis_and_save,
+                trigger='cron',
+                hour=22,
+                minute=0,
+                id='daily_report_evening',
+                name='Daily Report - Evening (Market Close)',
+                replace_existing=True
             )
-            print("Scheduler Docker: Added Evening Report Summary job (daily at 6:15 PM)")
             
             print("Scheduler Docker: All scheduled jobs added successfully")
             logger.info("All scheduled jobs added successfully")

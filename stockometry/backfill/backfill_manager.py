@@ -12,6 +12,7 @@ from ..database import get_db_connection
 from ..config import settings
 from .config import BackfillConfig, DEFAULT_BACKFILL_CONFIG
 from .report_analyzer import ReportAnalyzer, ReportAnalysis
+from .backfill_runner import BackfillRunner
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +23,7 @@ class BackfillManager:
         """Initialize the backfill manager"""
         self.config = config or DEFAULT_BACKFILL_CONFIG
         self.analyzer = ReportAnalyzer(self.config)
+        self.runner = BackfillRunner(self.config)
         
         # Log database environment information
         logger.info(f"BackfillManager initialized with config: {self.config.to_dict()}")
@@ -59,6 +61,38 @@ class BackfillManager:
         
         return analysis
     
+    def run_backfill(self, 
+                     start_date: Optional[datetime.date] = None,
+                     end_date: Optional[datetime.date] = None,
+                     dry_run: bool = False) -> Dict[str, Any]:
+        """
+        Run the complete backfill process
+        
+        Args:
+            start_date: Start date for backfill (defaults to lookback_days ago)
+            end_date: End date for backfill (defaults to today)
+            dry_run: If True, only show what would be processed
+            
+        Returns:
+            Dictionary with backfill results and status
+        """
+        logger.info("Starting backfill process")
+        if dry_run:
+            logger.info("Running in dry-run mode - no actual processing")
+        
+        try:
+            result = self.runner.run_backfill(start_date, end_date, dry_run)
+            logger.info(f"Backfill process completed with status: {result.get('status', 'unknown')}")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Backfill process failed: {str(e)}")
+            return {
+                "status": "failed",
+                "error": str(e),
+                "message": "Backfill process encountered an error"
+            }
+    
     def get_status(self) -> Dict[str, Any]:
         """Get current system status"""
         return {
@@ -72,7 +106,8 @@ class BackfillManager:
             },
             "capabilities": {
                 "daily_report_count": self.config.daily_report_count,
-                "lookback_days": self.config.lookback_days
+                "lookback_days": self.config.lookback_days,
+                "backfill_runner": "available"
             }
         }
     
@@ -83,8 +118,9 @@ class BackfillManager:
         old_config = self.config
         self.config = new_config
         
-        # Reinitialize analyzer with new config
+        # Reinitialize analyzer and runner with new config
         self.analyzer = ReportAnalyzer(self.config)
+        self.runner = BackfillRunner(self.config)
         
         logger.info(f"Configuration updated: {self.config.to_dict()}")
         

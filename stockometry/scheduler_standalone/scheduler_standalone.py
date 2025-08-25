@@ -90,14 +90,39 @@ def start_scheduler():
         _scheduler.add_job(process_articles_and_store_features, 'interval', minutes=15, id='nlp_processor')
         
         # --- Final Synthesis & Output Jobs - 3 times daily for fresher insights ---
-        # Morning Report (full daily analysis)
-        _scheduler.add_job(run_synthesis_and_save, 'cron', hour=2, minute=15, id='morning_report_job')
+        # Schedule daily reports at market-aligned times
+        # 06:00 UTC = US pre-market, European morning
+        # 14:00 UTC = US morning trading, European midday  
+        # 22:00 UTC = US market close, complete daily coverage
+        _scheduler.add_job(
+            func=run_synthesis_and_save,
+            trigger='cron',
+            hour=6,
+            minute=0,
+            id='daily_report_morning',
+            name='Daily Report - Morning (Pre-market)',
+            replace_existing=True
+        )
         
-        # Midday Update (quick refresh with new news/NLP data)
-        _scheduler.add_job(run_synthesis_and_save, 'cron', hour=10, minute=15, id='midday_report_job')
+        _scheduler.add_job(
+            func=run_synthesis_and_save,
+            trigger='cron',
+            hour=14,
+            minute=0,
+            id='daily_report_midday',
+            name='Daily Report - Midday (Trading)',
+            replace_existing=True
+        )
         
-        # Evening Summary (end-of-day wrap-up)
-        _scheduler.add_job(run_synthesis_and_save, 'cron', hour=18, minute=15, id='evening_report_job')
+        _scheduler.add_job(
+            func=run_synthesis_and_save,
+            trigger='cron',
+            hour=22,
+            minute=0,
+            id='daily_report_evening',
+            name='Daily Report - Evening (Market Close)',
+            replace_existing=True
+        )
         
 
         

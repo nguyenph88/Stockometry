@@ -25,7 +25,8 @@ class MissingReport:
 @dataclass
 class ReportAnalysis:
     """Results of analyzing reports for missing data"""
-    total_days_checked: int
+    start_date: datetime.date
+    end_date: datetime.date
     total_reports_expected: int
     total_reports_found: int
     missing_reports: List[MissingReport]
@@ -58,69 +59,97 @@ class ReportAnalyzer:
         
         logger.info(f"Analyzing reports from {start_date} to {end_date}")
         
-        # Get all scheduled reports in the date range (exclude ONDEMAND)
+        # Get existing reports for the date range
         existing_reports = self._get_existing_reports(start_date, end_date)
         
-        # Analyze each day
+        # Find missing reports
         missing_reports = []
+        total_expected = 0
+        total_found = 0
         
         current_date = start_date
         while current_date <= end_date:
-            day_reports = existing_reports.get(current_date, [])
-            day_missing = self._analyze_day(current_date, day_reports)
-            missing_reports.extend(day_missing)
+            for report_time in self.config.daily_report_times:
+                total_expected += 1
+                
+                # Check if this report exists
+                report_found = any(
+                    report.date == current_date and 
+                    report.expected_time == report_time
+                    for report in existing_reports
+                )
+                
+                if report_found:
+                    total_found += 1
+                else:
+                    # Create missing report entry
+                    missing_report = MissingReport(
+                        date=current_date,
+                        expected_time=report_time,
+                        report_type=self._get_report_type(report_time)
+                    )
+                    missing_reports.append(missing_report)
+            
             current_date += timedelta(days=1)
         
-        total_days = (end_date - start_date).days + 1
-        total_expected = total_days * self.config.daily_report_count
-        total_found = total_expected - len(missing_reports)
-        coverage = (total_found / total_expected * 100) if total_expected > 0 else 100.0
+        # Calculate coverage percentage
+        coverage_percentage = (total_found / total_expected * 100) if total_expected > 0 else 0
         
-        analysis = ReportAnalysis(
-            total_days_checked=total_days,
+        return ReportAnalysis(
+            start_date=start_date,
+            end_date=end_date,
             total_reports_expected=total_expected,
             total_reports_found=total_found,
             missing_reports=missing_reports,
-            coverage_percentage=coverage
+            coverage_percentage=coverage_percentage
         )
-        
-        logger.info(f"Analysis complete: {coverage:.1f}% coverage, {len(missing_reports)} missing reports")
-        return analysis
     
-    def _get_existing_reports(self, start_date: datetime.date, end_date: datetime.date) -> Dict[datetime.date, List[Dict]]:
-        """Get all scheduled reports for the date range (exclude ONDEMAND)"""
-        query = """
-            SELECT report_date, generated_at_utc
-            FROM daily_reports 
-            WHERE report_date >= %s AND report_date <= %s 
-            AND run_source != 'ONDEMAND'
-            ORDER BY report_date, generated_at_utc
-        """
-        
+    def _get_existing_reports(self, start_date: datetime.date, end_date: datetime.date) -> List[Dict[str, Any]]:
+        """Get existing reports from database for the date range"""
         try:
             with get_db_connection() as conn:
+                if not conn:
+                    logger.error("Failed to get database connection")
+                    return []
+                
                 cursor = conn.cursor()
+                
+                # Query for existing reports, excluding ONDEMAND and BACKFILL reports
+                # We only want to count scheduled reports (SCHEDULED, SCHEDULER_DOCKER)
+                query = """
+                    SELECT 
+                        DATE(report_date) as report_date,
+                        EXTRACT(HOUR FROM report_date) as hour,
+                        EXTRACT(MINUTE FROM report_date) as minute,
+                        run_source
+                    FROM daily_reports 
+                    WHERE DATE(report_date) BETWEEN %s AND %s
+                    AND run_source NOT IN ('ONDEMAND', 'BACKFILL')
+                    ORDER BY report_date
+                """
+                
                 cursor.execute(query, (start_date, end_date))
                 rows = cursor.fetchall()
+                cursor.close()
                 
-                # Group by date
-                reports_by_date = {}
+                # Convert to our internal format
+                reports = []
                 for row in rows:
-                    report_date = row[0]
-                    generated_at = row[1]
-                    
-                    if report_date not in reports_by_date:
-                        reports_by_date[report_date] = []
-                    
-                    reports_by_date[report_date].append({
-                        'generated_at': generated_at
-                    })
+                    report_date, hour, minute, run_source = row
+                    if hour is not None and minute is not None:
+                        expected_time = time(int(hour), int(minute))
+                        reports.append({
+                            'date': report_date,
+                            'expected_time': expected_time,
+                            'run_source': run_source
+                        })
                 
-                return reports_by_date
+                logger.info(f"Found {len(reports)} existing scheduled reports")
+                return reports
                 
         except Exception as e:
-            logger.error(f"Error fetching existing reports: {str(e)}")
-            return {}
+            logger.error(f"Error getting existing reports: {str(e)}")
+            return []
     
     def _analyze_day(self, date: datetime.date, day_reports: List[Dict]) -> List[MissingReport]:
         """Analyze a single day to find missing reports"""

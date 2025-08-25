@@ -23,9 +23,9 @@ class BackfillConfig:
         if self.daily_report_times is None:
             # Default to current 3-times daily schedule
             self.daily_report_times = [
-                time(2, 15),   # 2:15 AM UTC
-                time(10, 15),  # 10:15 AM UTC  
-                time(18, 15),  # 6:15 PM UTC
+                time(6, 0),    # 6:00 AM UTC - US pre-market, European morning
+                time(14, 0),   # 2:00 PM UTC - US morning trading, European midday
+                time(22, 0),   # 10:00 PM UTC - US market close, complete daily coverage
             ]
     
     @property
